@@ -17,6 +17,7 @@ ThinkingOS —— 把模糊情境变成可验证下一步的思考工具。判�
 | [docs/00-product/PRODUCT-CONSTITUTION.md](docs/00-product/PRODUCT-CONSTITUTION.md) | 不可妥协的产品规则 C-01…C-08 | 改产品行为前 |
 | [docs/01-research/DECISION-LOG.md](docs/01-research/DECISION-LOG.md) | 每条规则为什么这么定（D-001…D-026），含已考虑的替代项 | 想推翻某条规则前 |
 | [CONTEXT.md](CONTEXT.md) | 词汇表，每个术语带 `_Avoid_` 反义词，防术语漂移 | 写产品文档前 |
+| [memory.md](memory.md) | 当前阶段、验证状态与发布边界；只记已确认的持久状态 | 每次开工最后读 |
 
 `docs/00-product/PRD-v0.2.md` 是 **North Star，不是施工图**。它定义的 8 道 fail-closed Gate 和 17 段 schema 是长期目标；v0.1 以 `MVP-v0.1.md` 为准，二者冲突时听后者。
 
@@ -80,7 +81,7 @@ git check-ignore _private/ cases/
 
 ```bash
 test -s _private/privacy-tripwire-patterns.txt
-( rg --files-with-matches --hidden --glob '!**/.git/**' -f _private/privacy-tripwire-patterns.txt .agents/skills CONTEXT.md docs templates frameworks schemas; privacy_status=$?; [ "$privacy_status" -eq 1 ] )
+( rg --files-with-matches --hidden --glob '!**/.git/**' -f _private/privacy-tripwire-patterns.txt .agents/skills CONTEXT.md memory.md docs templates frameworks schemas; privacy_status=$?; [ "$privacy_status" -eq 1 ] )
 ```
 
-有扫描输出就停止发布。无输出仍需人工确认 `AGENTS.md`、`CLAUDE.md`、`.agents/skills/`、`CONTEXT.md`、`docs/`、`templates/`、`frameworks/`、`schemas/` 没有真实姓名、联系方式、业务数字、客户名单、本机绝对路径和第三方谈话细节。
+有扫描输出就停止发布。无输出仍需人工确认 `AGENTS.md`、`CLAUDE.md`、`.agents/skills/`、`CONTEXT.md`、`memory.md`、`docs/`、`templates/`、`frameworks/`、`schemas/` 没有真实姓名、联系方式、业务数字、客户名单、本机绝对路径和第三方谈话细节。
