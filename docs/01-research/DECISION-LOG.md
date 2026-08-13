@@ -1,0 +1,81 @@
+# ThinkingOS 产品决策日志
+
+**状态**：活跃
+**决策集**：支撑 `PRD-v0.2.md` North Star 与 `MVP-v0.1.md` 建造契约的产品定义决策
+**最后更新**：2026-08-13
+
+本日志记录产品约束为何存在。它不是待办清单，也不取代产品宪法。对任何 `Accepted` 决策的修改，都必须保留原记录，并新增一条取代决策或显式状态迁移。真实 Case 的人物、业务、数字、时间戳、互动细节与证据锚点不进入本日志。
+
+## 1. 来源控制
+
+| 来源 ID | 说明 | 完整性 | 证据用途 |
+|---|---|---|---|
+| SRC-001 | 初始产品战略基线 | 受版本控制管理 | Decision Intelligence、`ThinkingCase` 闭环、可反证判断、行动、复盘与范围纪律。 |
+| SRC-003 | Phase 0 产品定义确认 | 只保留领域中立的产品约束 | 案例式认知运行时、目标主权、建议可反证、过程学习、`Clarity Triage`、证据/语境/计划/Gate 与明确非目标。 |
+| SRC-004 | `PRODUCT-CONSTITUTION.md` | 受版本控制管理 | 不可妥协产品约束及其例外协议。 |
+| SRC-005 | `CONTEXT.md` | 受版本控制管理 | 规范领域语言及版本作用域。 |
+| SRC-006 | v0.1 产品方向确认 | 只记录领域中立的方向，不包含任何真实 Case 的人物、业务、数字、时间戳、标题或互动细节 | v0.1 面向日常反复使用；Quick / Full 是两种处理深度；自诊 / 他诊是使用视角而非第三档；在扩展产品前先完成 5 次进入 Quick / Full、形成正常决策出口、落盘且有复盘日期的真实验证 session（3 次自诊 + 2 次他诊）；非答案出口不计数。 |
+| SRC-007 | v0.1 交互入口方向确认 | 只记录领域中立的产品方向，不包含任何真实对话或 Case 内容 | 默认以 GPT Work 自由协作；可先给可逆的临时保护动作；Quick / Full 只在正式收束、落盘、验证或重大事项确认不可逆承诺时启用；已有对话应被复用而不是重新盘问。 |
+| SRC-008 | v0.1 专门知识增强方向确认 | 只记录领域中立的能力设计，不复制私有知识库、课程案例、人物、业务或数字 | 保持单一自由协作入口；在问题确需领域结构时按问题形状检索已有只读知识源，用来源、适用条件和禁用条件约束方法，不把方法数量变成流程负担或产品真理。 |
+
+### 1.1 Case 证据边界
+
+真实 Case 原始材料只服务具体 Case 的判断与复盘，不作为产品源码。本日志只引用经产品负责人确认的领域中立产品方向；不保存 Case 证据锚点、摘要、hash、转录定位或互动复述。清理这类材料只改变产品文档的证据暴露面，不反向改写历史决策的原裁决。
+
+## 2. 状态语义
+
+- **Accepted**：在决策明确写出的版本作用域内具有约束力。
+- **Provisional**：当前工作选择，在适用版本的接受 Gate 之前必须有证据。
+- **Deferred**：在明确版本中有意不决策或不开发。
+- **Superseded in v0.1**：原裁决作为历史与 v0.2 North Star 意图保留，但 v0.1 执行由具名新决策取代。
+- **Superseded**：为保留历史而存续，但在全部作用域内已被具名决策取代。
+
+## 3. 已记录决策
+
+| ID | 来源 | 裁决 | 理由 | 已考虑替代项 | 状态 | 重访条件 |
+|---|---|---|---|---|---|---|
+| D-001 | SRC-001 §1–3，SRC-003 | 将 ThinkingOS 定义为**面向 Decision Intelligence 的案例式认知运行时**，并以 `ThinkingCase` 为价值单元。 | 差异化资产是从判断到 `Outcome` 的可追溯历史，而不是通用答案质量或框架数量。 | 第二大脑；框架选择器；通用 AI 顾问；任务管理器。 | Accepted | 仅当多个已完成 Case 证明它超不过普通对话，且另一产品单元能更好解释证据时重访。 |
+| D-002 | SRC-003；SRC-001 §7、§15 | V0.1 先以**专家副驾（Expert Copilot）**形态交付一个真实 Case，但不将其定义为永久产品形态。 | 这是验证建议导入、挑战、行动和复盘的最小可信路径，且不伪装为已解决所有决策语境。 | 先做通用 Copilot；独立自主专家；永久限定为专家来源产品。 | Superseded in v0.1（交付形态由 D-023 取代） | 基准 Case 与迁移 fixtures 通过后，依据已观察的重复入口模式重访产品形态，而不是路线图偏好。 |
+| D-003 | SRC-003 | 明确 `Case Owner` / `Advisor` / `Copilot` 三角色；`Owner Goal` 高于 `Advisor Default Goal`，且只有在 Owner 确认的 `Success Contract` 命名 desired outcome、可观察 success criteria、可接受/不可接受 workload/cost 与 non-goals/failure conditions 时才足够具体。 | 建议可能默默优化与 Owner 不同的目标。明确权限和成功边界可防止有用专业知识变成目标替换。 | Advisor 定义成功；空泛 Owner Goal；Copilot 推断目标；不区分“用户/助手”。 | Accepted | 仅当另一角色合法承担后果时重访；即使如此也应记录责任归属，而不是删除它。 |
+| D-004 | SRC-003；SRC-001 §8 | 将 `Clarity Triage` 作为 `DRAFT` 内第一个 Gate，以 `full_case`、`evidence_first`、`small_reversible_action`、`no_framework_needed` 或 `cannot_proceed` 五种 disposition 分流。 | 不是每个输入都值得完整 Workflow，但在归属、利害、可逆性和目标冲突尚不清楚时，重大建议不安全。 | 即时答案；强制完整 Workflow；单独持久 `TRIAGE` 状态。 | Accepted（分流意图）；v0.1 强制入口执行见 D-025 | 至少观察 20 个 Case 后，若出现稳定的新类别或系统性误分流，重访路由。 |
+| D-005 | SRC-001 §6、§10、§13；SRC-003 | 建立 `Evidence Ledger`，通过来源将观察、证言、文档、估算、推断、建议、冲突与未知分开。 | 不同来源内容的认识论地位不同；压平会制造虚假确定并隐藏缺口。 | 自由格式笔记；只在最终结论加引用；把所有来源内容当事实。 | Accepted | 当评估显示类别对 `Case Owner` 不可区分，或遗漏某种反复出现的重大类型时，重访分类词汇。 |
+| D-006 | SRC-003 | 当多个因果解释成立时要求 `Competing Diagnoses`，包含支持、反证和区分性证据；产品形态与解决方案不是诊断。重大形态判断之前必须先明确目标对象、待解决任务与可观察结果，或显式建模多个独立任务；未解时形态保持 provisional 并优先区分性研究。 | 原因解释、解决方案与交付形态属于不同层级；用解法标签通过问题 Gate 会把偏好伪装成根因。 | 单一根因答案；用方案标签代替诊断；不排序想法清单；无问题模型。 | Accepted | 仅当低歧义 Case 受到负担时重访最少数量；当前需求已仅适用于重大歧义。 |
+| D-007 | SRC-003 | 在既存关系会改变证明或说服强度时，将 `Relationship Temperature` 建模为暖、冷或未知，并按具有可观察定义的 cohort 分开证据。 | 一种关系语境中的结果不能直接证明另一种语境成立；关系语境会实质改变同一行动的解读。 | 单一不区分对象池；完整关系生命周期；数字温度分。 | Accepted | 若真实 Case 反复需要一个会改变决策的中间状态，重访粒度。 |
+| D-008 | SRC-003 | 将外部对象和 Advisor 自身对比视为可选 `Competitor Analogy Hypotheses`，绝不视为直接证据或 Case 核心必填字段。 | 只有在阶段、对象、渠道、资源与迁移缺口显式化后，类比才有信息价值。 | 复制类比对象 playbook；禁止类比；强制竞品分析。 | Accepted | 若类比很少改变判断，或反复需求证明专用研究 Workflow 成立，重访。 |
+| D-009 | SRC-003 | 将已知或有迹象的 `Advisor Incentives` 放在受影响建议旁，不推断意图。 | 即使建议真诚，激励也可能影响问题框定；披露相关语境不等于断言恶意。 | 忽略激励；任何激励都使建议失效；推断心理偏见分。 | Accepted | 在 `Case Owner` 显示哪些激励语境会改变决策、哪些只会分心后，重访披露深度。 |
+| D-010 | SRC-003 | 将计划表达为具有显式依赖、容量、证据、Threshold 和 Gate 的 `Parallel Tracks`。 | 可独立学习的工作不应仅因叙述顺序而被强制串行。 | 单一线性总清单；无约束并发任务清单；完整项目管理系统。 | Accepted（v0.2 North Star）；v0.1 执行见 D-024 | 在多个完整 Case 中观察执行容量和协调失败后重访；默认不扩展成项目管理。 |
+| D-011 | SRC-003 | 使每个定量或定性 `Threshold` 参数化、有来源、已采纳、有版本，并与决策后果绑定。该要求参数化可度量的 `Track Gate`；`Lifecycle Gate` 使用显式 Contract 与证据，但不必数值化。 | 未经语境校准的建议门槛不具有普适有效性；硬编码会把来源经验变成产品真理，强迫生命周期 Gate 数值化也会造成伪精确。 | 固定最佳实践常量；没有 Threshold；所有 Gate 数值化；没有决策链接的自由文本。 | Accepted（v0.2 North Star）；v0.1 执行见 D-024 | 仅当真实使用表明某参数没有决策价值，或某缺失参数反复导致歧义时，重访 Threshold Contract。 |
+| D-012 | SRC-003 | `G-04 Teach-back / Decision Confirmation` 是 `DECIDING → PLANNED` 的必经 Gate；评估概念覆盖，允许拒绝，而不是模仿答案。 | 表示赞同不能证明 `Case Owner` 已形成自己的问题模型；行动承诺由 `G-05` 独立处理。 | 确认按钮；复制摘要测验；可选摘要；Copilot 推断理解。 | Superseded in v0.1（fail-closed 执行由 D-024 暂停）；Accepted（v0.2 North Star 意图） | 对抗测试后重访评估方法；永不删除赞同与理解的区分。 |
+| D-013 | SRC-003；SRC-001 §14、§16 | 将**推理过程与 `Outcome` 好坏分开诊断**，且绝不以符合 Advisor 答案为学习目标。 | 好决策可能有不利 `Outcome`，弱推理也可能走运。学习应检查框定、证据、替代项、Threshold、承诺、执行、变化和偶然。 | 二元成功/失败；Advisor 标准答案；从一个结果自动贴偏见标签。 | Accepted | 在已复盘 Case 显示维度冗余或遗漏因果因素后，重访诊断维度。 |
+| D-014 | SRC-003 | 使 `Unresolved Issues` 持久可见，直到它被解决、明确接受、安排补证据或带入后续。 | 隐藏开放冲突会使报告看似完整，却削弱后续解读和复盘。 | 决策后隐藏；所有问题堆进笔记；不确定性清零前阻止所有行动。 | Accepted | 首批 Case 显示用户能在多少开放问题下安全行动后，重访优先级。 |
+| D-015 | SRC-001 §8、§10；SRC-003 | 使用主状态 `DRAFT → CLARIFYING → MODELED → DECIDING → PLANNED → ACTING → REVIEW_DUE → REVIEWED → ARCHIVED`；`DECIDING → PLANNED` 要求 `G-04 Teach-back / Decision Confirmation`，`PLANNED → ACTING` 要求 `G-05 NOW Commitment` 和一个已承诺 `NOW Action`。 | 计划已出但尚未承诺的独立状态，可防止把建议误当行动。双 Gate 将决策确认与行动承诺分开。 | 保持原状态且不加 `PLANNED`；一个合并 Gate；Triage 单独状态。 | Superseded in v0.1（状态机执行由 D-024 暂停）；Accepted（v0.2 North Star 意图） | 仅凭端到端迁移证据重访；schema 命名可调整，但必须保留语义区分和历史。 |
+| D-016 | SRC-001 §7、§15、§18；SRC-003 | V0.1 排除新 UI、framework-kernel 复制、多 Agent 编排、全领域覆盖与完整认知历史基础设施。 | 它们均非验证一个专家建议 Case 能否达到已理解行动与诚实复盘所必需；每项都会增加延误和混淆变量。 | 先建平台基础；多 Agent 专家委员会；domain packs；完整 dashboard。 | Accepted | 仅当通过的 V0.1 Case 与反复用户摩擦证明某能力是已验证需求的最小解法时，逐项重访。 |
+| D-017 | SRC-003；跨文件兼容要求 | 保持 PRD 的 `ThinkingCase` 模型为**概念模型**；字段类型、序列化、校验语法、存储和迁移由实现 schema 决定。 | 产品语义必须引导 schema，但不能制造两份互相竞争的技术契约。 | 在 PRD 写完整 JSON Schema；省略模型；任由实现自创术语。 | Accepted | 仅当产品与 schema 语义分歧时重访；通过词汇对齐解决，不复制 schema。 |
+| D-018 | SRC-001；SRC-003 | 将导入材料视为**来源 fixture 与有归属证言**，不视为已验证事实；保留贡献者归属与来源不确定性。 | 转录、回忆、自报和来源经验都可能错误。产品验证取决于可追溯性，而不是假装输入是干净数据集。 | 规范化为无疑事实；丢弃原始来源；在任何 Case 工作前强制外部验证。 | Accepted | 当新证据验证、反驳或取代个别主张时重访该主张；永不改写原始来源记录。 |
+| D-019 | SRC-003；SRC-001 §12 | 通过小型 Contract 复用现有推理/framework kernel；不以被复制或新写的框架数量衡量进度。 | 产品创新在于 Case 状态、证据、Gate 和反馈纪律。框架激增会重现 V0.1 已识别的框架库陷阱。 | 把 kernel 复制进仓库；创建定制框架集；完全取消可复用推理动作。 | Accepted | 仅当某个必需推理操作不存在且无法用现有 Contract 表达时重访。 |
+| D-020 | SRC-001 §16；SRC-003 | 将产品与普通摘要和一次性通用 AI 对比，指标为可追溯性、目标忠实度、可反证性、行动、Gate 完整性与学习，而不是输出长度或自评聪明程度。 | 产品命题是相对普通对话的改进；需要循证基线避免 demo theater。 | 没有基线；只看用户喜欢；框架数量；只用自动 model-as-judge。 | Provisional | 在领域中立的基准 Case 与对抗 fixtures 上试行盲审协议和 rubric 后接受或修订。 |
+| D-021 | 澄清 D-004；SRC-003 | `Clarity Triage` 共有五个合法 `gate_decision`：`full_case`、`evidence_first`、`small_reversible_action`、`no_framework_needed` 与 `cannot_proceed`。只有 `full_case` 可使 Case 进入 `CLARIFYING`；其他四种保持 `DRAFT` 并拥有可审计 route 子生命周期。`cannot_proceed` 是 blocker disposition，不是成功闭环。 | 主状态机只表达 full-case 会使非 full routes 没有闭环与重进语义；“无需框架”也需要独立于“小型可逆行动”。 | 将所有路由都进入 `CLARIFYING`；把 `no_framework_needed` 藏在 full-case 内；把 `cannot_proceed` 只当未记录的内部错误。 | Superseded in v0.1（route 子生命周期执行由 D-024 暂停，强制入口由 D-025 延后）；Accepted（v0.2 North Star 意图） | 至少 20 个 Triage 样本显示路由重叠、无法复现或存在缺失 disposition 时重访。 |
+| D-023 | 取代 D-002 的 v0.1 交付形态部分；宪法 C-08 例外；SRC-006 | v0.1 支持**日常反复使用**；Quick / Full 是两种处理深度，自诊 / 他诊是两种使用视角而非第三档，不限定单一 Case。PRD 的 8 道 fail-closed Gate 在 v0.1 降级为勾选式检查清单。建造契约转由 `MVP-v0.1.md` 承担，`PRD-v0.2.md` 保留为 North Star。 | 早期首要不确定性是工具能否被反复使用并产生可复盘记录，而不是完整运行时是否足够严谨。两档深度让使用成本与情境风险匹配。 | 严格执行 D-002 的单 Case 形态；只支持一种视角；保留 fail-closed Gate 但降低 Gate 数量。 | Accepted；正式化边界由 D-024、入口边界由 D-025 澄清 | 跑满 5 个进入 Quick / Full、形成正常决策出口、落盘且有复盘日期的真实验证 session（3 次自诊 + 2 次他诊；非答案出口不计数）后重访。回滚路径：停用 `templates/case-quick.md` 与 SKILL 的 Quick 分支，只保留 Full；将 PRD-v0.2 的 fail-closed Gate 与状态机重新设为 v0.1 执行契约；既有 Markdown Case 保留为历史记录，无需数据迁移。 |
+| D-022 | 澄清 D-011；SRC-003 | 未经本案校准与 `Case Owner` 采纳的 Advisor 数字，只能称为 `threshold_candidate` 或 `expert_benchmark`，并以 `provenance_type: advisor_recommendation`、`status: provisional` 保持 inactive；禁止 `default_candidate` 命名。只有 Owner 采纳且完整 Threshold Contract 成立后才能激活。 | `default_candidate` 会在语义上暗示默认采纳，与 D-011 的来源、参数化与 Owner 采纳要求冲突。 | 保留 `default_candidate` 但添加警告；所有 Advisor 数字都作废；直接视为 hard gate。 | Accepted（v0.2 North Star）；v0.1 参数化执行见 D-024 | 仅当实验证明某一数值在明确人群和语境中具有稳定默认有效性，且仍不削弱 Owner 采纳时重访。 |
+| D-024 | 澄清 D-023；在 v0.1 作用域取代 D-012 的 fail-closed 执行、D-015 的状态机执行与 D-021 的 route 子生命周期执行；宪法 C-05 / C-06 执行例外；SRC-006 | **v0.1 正式化层权威**：以 `MVP-v0.1.md` 为施工契约，Quick / Full 为仅有的正式收束深度，自诊 / 他诊仅为视角。`G-01`…`G-08` 只作 Full 收尾检查清单，不阻塞状态迁移或 Case 完成；v0.1 不执行主状态机或 route 子生命周期。`C-05` 仍禁止把赞同当理解，但不强制正式 Teach-back Gate；`C-06` 仍要求下一步进入现实并可复盘，但不强制完整 Parallel Tracks、参数化 Threshold、Lifecycle Gate 或状态迁移 Contract。`D-012`、`D-015`、`D-021` 的原裁决与 `C-05`、`C-06` 的完整语义作为 v0.2 North Star 保留。默认交互入口由 D-025 补充；`PRD-v0.2.md` 定义长期行为，`CONTEXT.md` 定义长期术语且对 Gate 标明版本作用域，二者都不构成 v0.1 迁移阻塞。 | 先验证反复使用与复盘价值，可以避免把尚未验证的仪式成本固化为运行时；同时保留长期语义，使 v0.1 证据可用于决定是否恢复 fail-closed 执行。 | 立即实现完整状态机；删除长期 Gate 语义；把自诊 / 他诊做成第三档；只保留一种正式收束深度。 | Accepted（v0.1 正式化层权威；入口见 D-025） | **负责人**：ThinkingOS 产品负责人（`Case Owner`）。完成 5 个进入 Quick / Full、形成正常决策出口、落盘且有复盘日期的真实验证 session（3 次自诊 + 2 次他诊；非答案出口不计数）后，检查重复使用、理解误判、行动/复盘缺口与多余步骤，再决定延续、收紧或恢复完整执行。**回滚路径**：停用 `templates/case-quick.md` 与 SKILL 的 Quick 分支，只保留 Full；将 PRD-v0.2 的 fail-closed Gate 与状态机重新设为 v0.1 执行契约；既有 Markdown Case 保留为历史记录，无需数据迁移。 |
+| D-025 | 在 v0.1 交互入口上补充 D-024；宪法 C-01 / C-02 执行时点例外；SRC-007 | **GPT Work 是 v0.1 默认自由协作态**，不是第三档、路由、Case 类型、状态或验证样本。普通问答与探索可以直接解释、推演、反驳、追问或给有边界的临时判断；高风险时可以先建议暂停、延迟、补证据、离开即时危险等可逆保护动作。显式 Success Contract 与强制 Clarity Triage 延后到用户要求正式收束、冻结承诺、落盘、计入验证，或重大 / 高代价 / 难逆事项准备确认不可逆行动之前。正式化仍只有 Quick / Full 两档，并复用已有对话，只补关键缺口。用户拒绝正式化时可以继续探索和采用临时保护动作，但不得认可不可逆承诺或将其表述为已完成的重大决策。Work 不直接写 ThinkingCase，也不计入首批验证；`D-001` 的持久价值单元仍是 ThinkingCase。`C-01` 的目标主权、`C-02` 的先分流意图及其 v0.2 原文保持不变；`C-03` 的重大判断证据纪律与 `C-04` 的关键语境边界在 Work 中仍有效。 | 当前头号风险仍是不被使用；把完整 Triage、Owner 标签和出口字段放在每次问答之前，会把协作变成录入仪式。将严格度放到不可逆承诺与记录边界，既保留自由思考，也避免高风险决定绕过审计。 | 所有输入第一轮先 Triage；新增第三套 Work 模板 / 状态；完全无边界的通用聊天；在 Work 中直接认可不可逆行动。 | Accepted（v0.1 入口权威） | **负责人**：ThinkingOS 产品负责人（`Case Owner`）。完成首批 5 个正式 Quick / Full 验证 session 后，检查 Work 是否降低使用摩擦、是否出现应升级却未升级的重大判断，以及已有对话能否无重复盘问地转成 Case。**回滚路径**：恢复所有模糊或重大输入在第一条建议前完成最小 Clarity Triage；Quick / Full 模板与既有 Case 无需迁移。 |
+| D-026 | 澄清 D-016、D-019 与 D-025；SRC-008 | **专门知识采用渐进披露，不进入通用框架目录。** GPT Work 或正式化中的问题确需领域特有结构时，可以从已有只读知识源按「问题对象 + 首个上游断点」检索一套有来源的专门方法；先由索引定位，再读原始消化笔记或上游来源。一次默认最多一套专门方法；如仍需校正判断，只再使用一个解决不同断点的 `CATALOG` 框架。专门方法必须核对必要输入、适用语境与禁用条件；讲师案例、自报结果、数字与固定阈值保持 provisional。低代价可逆、纯事实、边界清楚或模型能力已足够的问题直接处理，不为使用知识库增加流程。私有方法索引仍是外部证据层，不复制进 `docs/`、`frameworks/`、模板或产品 schema，也不成为 `domain-pack`。 | 通用模型能处理多数问题，但可能漏掉领域内关键区分；把所有课程模型塞进 Skill 或 CATALOG 又会增加上下文、互相冲突并诱发仪式化。按首个断点检索、限制工具数量并强制来源与退出条件，可以在不牺牲自由度的情况下获得专门知识。 | 每套方法建独立 Skill；把课程模型全部收入 CATALOG；每次问答强制遍历完整商业或人生流程；只靠模型记忆、不保留来源。 | Accepted（v0.1 专门知识调用合同；不构成宪法例外） | **负责人**：ThinkingOS 产品负责人（`Case Owner`）。完成首批 5 个正式验证 session，并积累足够的 Work 使用记录后，检查是否选错断点、是否重复检索、是否出现方法堆叠或来源主张被当成事实。只有反复出现且跨领域成立的缺口才考虑进入 `CATALOG`；其余继续留在外部知识层。**回滚路径**：删除 Skill 的专门方法检索分支与私有索引，不影响 CATALOG、Quick / Full 模板或既有 Case。 |
+
+## 4. 延后决策
+
+| ID | 问题 | 延后原因 | 重访触发器 |
+|---|---|---|---|
+| DD-001 | 精确存储 schema 与字段类型 | 产品概念已定；实现表达属于 schema Contract。 | 实现持久化 Case 之前。 |
+| DD-002 | `Teach-back` 语义评估方法 | Gate 行为已定，但评分必须针对复制、释义和理性异议测试。 | `G-04` 自动化之前；验证前使用人工审核。 |
+| DD-003 | Track 容量模型 | 容量是必需的，但点数、时间预算、WIP 限制或其他表达需要观察使用。 | 支持超过两个并行 active Tracks 之前。 |
+| DD-004 | 原始逐字稿保留政策 | 数据最小化已确定；时长和删除行为取决于实现与用户恢复需求。 | 在本地验证环境之外存储真实逐字稿之前。 |
+| DD-005 | Expert Copilot 之后的长期形态 | V0.1 是有意选择的验证形态，不是不可逆的品类选择。 | 完成首批验证 session、迁移 fixtures 和重复入口模式观察后。 |
+
+## 5. 变更协议
+
+1. `Advisor` 答复与专家复审结果只能先更新有归属的 evidence、hypothesis、heuristic 或 gap；它们不能直接修改产品规则。
+2. 规范性变更必须有 `Case Owner` 确认、独立证据或已观察 `Outcome` 支持，并引用决策 ID 与新证据。
+3. 说明变更是澄清、取代还是反转裁决。
+4. 点名受影响的宪法规则、PRD 需求、验收标准、词汇术语与 schema 概念。
+5. 保留旧决策，并新增一条具有显式关系的决策。
+6. 对宪法例外，加入负责人、到期或重访条件和回滚路径。

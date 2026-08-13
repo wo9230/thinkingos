@@ -1,0 +1,3881 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://thinkingos.local/schemas/thinking-case.schema.yaml"
+title: "ThinkingOS ThinkingCase"
+description: >-
+  ThinkingOS V0.2 structured case contract. The contract preserves what was
+  known, inferred, decided, attempted, and learned at each point in time. All
+  top-level sections exist from DRAFT onward; section-level status and nulls
+  represent work not yet completed. Confirmed decisions must be versioned,
+  never rewritten with hindsight.
+$comment: >-
+  JSON Schema validates one snapshot and individual transition records. The
+  application validator MUST additionally enforce referential integrity,
+  exactly one primary Track, state-history continuity, monotonic versions,
+  Gate-to-transition correspondence, semantic Teach-back coverage, copied-text
+  or assent-only detection, immutable Decision Snapshot hashes, and whether an
+  unresolved blocker whose blocking_phase is the current or an earlier phase
+  prevents the requested Gate transition.
+type: object
+additionalProperties: false
+required:
+  - schema_version
+  - identity
+  - context
+  - success_contract
+  - clarity_gaps
+  - evidence_ledger
+  - competing_hypotheses
+  - question_answer_trace
+  - problem_model
+  - decision
+  - action_plan
+  - decision_snapshot
+  - threshold_provenance
+  - teach_back
+  - unresolved_issues
+  - review
+  - advisor_incentives
+  - audit
+properties:
+  schema_version:
+    type: string
+    const: "0.2.0"
+  identity:
+    $ref: "#/$defs/Identity"
+  context:
+    $ref: "#/$defs/Context"
+  success_contract:
+    $ref: "#/$defs/SuccessContract"
+  clarity_gaps:
+    $ref: "#/$defs/ClarityGaps"
+  evidence_ledger:
+    type: array
+    items:
+      $ref: "#/$defs/EvidenceClaim"
+  competing_hypotheses:
+    type: array
+    items:
+      $ref: "#/$defs/Hypothesis"
+  question_answer_trace:
+    type: array
+    items:
+      $ref: "#/$defs/QuestionAnswerTurn"
+  problem_model:
+    $ref: "#/$defs/ProblemModel"
+  decision:
+    $ref: "#/$defs/Decision"
+  action_plan:
+    $ref: "#/$defs/ActionPlan"
+  decision_snapshot:
+    $ref: "#/$defs/DecisionSnapshot"
+  threshold_provenance:
+    type: array
+    items:
+      $ref: "#/$defs/Threshold"
+  teach_back:
+    $ref: "#/$defs/TeachBack"
+  unresolved_issues:
+    type: array
+    items:
+      $ref: "#/$defs/UnresolvedIssue"
+  review:
+    $ref: "#/$defs/Review"
+  advisor_incentives:
+    type: array
+    items:
+      $ref: "#/$defs/AdvisorIncentive"
+  audit:
+    $ref: "#/$defs/Audit"
+allOf:
+  # G-01 fail-closed: any state after DRAFT proves Clarity Triage passed.
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - CLARIFYING
+                - MODELED
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        context:
+          properties:
+            decision_scope:
+              type: string
+              minLength: 1
+            time_horizon:
+              type: string
+              minLength: 1
+          required:
+            - decision_scope
+            - stakes
+            - reversibility
+            - time_horizon
+        success_contract:
+          properties:
+            status:
+              enum:
+                - draft
+                - confirmed
+                - superseded
+            owner_goal:
+              type: object
+              properties:
+                statement:
+                  type: string
+                  minLength: 1
+              required:
+                - statement
+            goal_alignment:
+              type: object
+              properties:
+                status:
+                  enum:
+                    - aligned
+                    - partially_aligned
+                    - conflicting
+                    - no_advisor
+                    - unknown
+                assessed_at:
+                  $ref: "#/$defs/ISODateTime"
+              required:
+                - status
+                - assessed_at
+          required:
+            - status
+            - owner_goal
+            - goal_alignment
+        clarity_gaps:
+          properties:
+            triage_status:
+              const: ready
+            assessed_at:
+              $ref: "#/$defs/ISODateTime"
+            gate_decision:
+              const: full_case
+            route_status:
+              const: ready_for_transition
+            next_state:
+              const: CLARIFYING
+          required:
+            - triage_status
+            - assessed_at
+            - gate_decision
+            - route_status
+            - next_state
+        audit:
+          properties:
+            source_manifest:
+              minItems: 1
+          required:
+            - source_manifest
+  # G-02 fail-closed: MODELED means Reality Sufficiency passed.
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - MODELED
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        success_contract:
+          properties:
+            status:
+              enum:
+                - confirmed
+                - superseded
+            owner_goal:
+              type: object
+              properties:
+                statement:
+                  type: string
+                  minLength: 1
+                user_confirmed:
+                  const: true
+                confirmed_at:
+                  $ref: "#/$defs/ISODateTime"
+                acceptable_costs:
+                  minItems: 1
+                unacceptable_costs:
+                  minItems: 1
+              required:
+                - statement
+                - acceptable_costs
+                - unacceptable_costs
+                - user_confirmed
+                - confirmed_at
+            goal_alignment:
+              type: object
+              properties:
+                status:
+                  enum:
+                    - aligned
+                    - partially_aligned
+                    - conflicting
+                    - no_advisor
+                assessed_at:
+                  $ref: "#/$defs/ISODateTime"
+                owner_acknowledged:
+                  const: true
+              required:
+                - status
+                - assessed_at
+                - owner_acknowledged
+            user_confirmed:
+              const: true
+            confirmed_at:
+              $ref: "#/$defs/ISODateTime"
+            desired_outcome:
+              type: string
+              minLength: 1
+            success_criteria:
+              minItems: 1
+            failure_conditions:
+              minItems: 1
+            non_goals:
+              minItems: 1
+          required:
+            - status
+            - owner_goal
+            - goal_alignment
+            - desired_outcome
+            - success_criteria
+            - failure_conditions
+            - non_goals
+            - user_confirmed
+            - confirmed_at
+        evidence_ledger:
+          minItems: 1
+        context:
+          properties:
+            relationship_temperature_applicability:
+              enum:
+                - required
+                - not_material
+            advisor_incentive_applicability:
+              enum:
+                - required
+                - none_identified
+            contradiction_assessment:
+              enum:
+                - none_identified
+                - recorded
+            critical_issue_disposition:
+              enum:
+                - none_identified
+                - recorded
+          required:
+            - relationship_temperature_applicability
+            - advisor_incentive_applicability
+            - contradiction_assessment
+            - critical_issue_disposition
+        unresolved_issues:
+          items:
+            allOf:
+              - if:
+                  properties:
+                    impact:
+                      enum:
+                        - blocker
+                        - high
+                    status:
+                      enum:
+                        - open
+                        - monitoring
+                  required:
+                    - impact
+                    - status
+                then:
+                  properties:
+                    owner:
+                      $ref: "#/$defs/PersonRef"
+                    next_action:
+                      type: string
+                      minLength: 1
+                    due_at:
+                      $ref: "#/$defs/DateOrDateTime"
+                    disposition:
+                      enum:
+                        - evidence_action
+                        - decision_date
+                        - accepted_uncertainty
+                  required:
+                    - owner
+                    - next_action
+                    - due_at
+                    - disposition
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - MODELED
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+        context:
+          properties:
+            advisor_incentive_applicability:
+              const: required
+          required:
+            - advisor_incentive_applicability
+      required:
+        - identity
+        - context
+    then:
+      properties:
+        advisor_incentives:
+          minItems: 1
+          items:
+            type: object
+            properties:
+              potential_incentives:
+                minItems: 1
+              default_goal:
+                type: object
+                properties:
+                  user_validated:
+                    const: true
+                required:
+                  - user_validated
+              user_acknowledged:
+                const: true
+            required:
+              - potential_incentives
+              - default_goal
+              - user_acknowledged
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - MODELED
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+        context:
+          properties:
+            contradiction_assessment:
+              const: recorded
+          required:
+            - contradiction_assessment
+      required:
+        - identity
+        - context
+    then:
+      anyOf:
+        - properties:
+            evidence_ledger:
+              contains:
+                type: object
+                properties:
+                  epistemic_status:
+                    enum:
+                      - contested
+                      - refuted
+                required:
+                  - epistemic_status
+              minContains: 1
+        - properties:
+            unresolved_issues:
+              contains:
+                type: object
+                properties:
+                  category:
+                    const: hypothesis_conflict
+                required:
+                  - category
+              minContains: 1
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - MODELED
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+        context:
+          properties:
+            critical_issue_disposition:
+              const: recorded
+          required:
+            - critical_issue_disposition
+      required:
+        - identity
+        - context
+    then:
+      properties:
+        unresolved_issues:
+          minItems: 1
+  # G-03 fail-closed: DECIDING means the Problem Model passed.
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        problem_model:
+          properties:
+            status:
+              const: confirmed
+            symptom:
+              type: string
+              minLength: 1
+            reframed_problem:
+              type: string
+              minLength: 1
+            root_hypothesis_ids:
+              minItems: 1
+            confirmation_claim_ids:
+              minItems: 1
+            user_confirmed:
+              const: true
+            confirmed_at:
+              $ref: "#/$defs/ISODateTime"
+          required:
+            - status
+            - symptom
+            - reframed_problem
+            - root_hypothesis_ids
+            - confirmation_claim_ids
+            - user_confirmed
+            - confirmed_at
+        competing_hypotheses:
+          minItems: 1
+          items:
+            type: object
+            properties:
+              supporting_claim_ids:
+                minItems: 1
+              predictions:
+                minItems: 1
+              falsified_when:
+                minItems: 1
+              diagnostic_action_ids:
+                minItems: 1
+            required:
+              - supporting_claim_ids
+              - contradicting_claim_ids
+              - predictions
+              - falsified_when
+              - diagnostic_action_ids
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        competing_hypotheses:
+          minItems: 1
+        problem_model:
+          properties:
+            status:
+              enum:
+                - draft
+                - confirmed
+                - superseded
+            reframed_problem:
+              type: string
+              minLength: 1
+            key_constraint:
+              type: string
+              minLength: 1
+          required:
+            - status
+            - reframed_problem
+            - key_constraint
+            - ambiguity_material
+            - alternative_exclusion_rationale
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+        problem_model:
+          properties:
+            ambiguity_material:
+              const: true
+          required:
+            - ambiguity_material
+      required:
+        - identity
+        - problem_model
+    then:
+      properties:
+        competing_hypotheses:
+          minItems: 2
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - DECIDING
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+        problem_model:
+          properties:
+            ambiguity_material:
+              const: false
+          required:
+            - ambiguity_material
+      required:
+        - identity
+        - problem_model
+    then:
+      properties:
+        problem_model:
+          properties:
+            alternative_exclusion_rationale:
+              type: string
+              minLength: 1
+          required:
+            - alternative_exclusion_rationale
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - PLANNED
+                - ACTING
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        decision:
+          properties:
+            status:
+              enum:
+                - confirmed
+                - superseded
+            selected_option_id:
+              type: string
+              minLength: 1
+            current_best_judgment:
+              type: string
+              minLength: 1
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+            user_confirmed:
+              const: true
+          required:
+            - status
+            - selected_option_id
+            - current_best_judgment
+            - confidence
+            - user_confirmed
+        action_plan:
+          properties:
+            status:
+              enum:
+                - confirmed
+                - in_progress
+                - completed
+                - superseded
+            tracks:
+              minItems: 1
+              contains:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    contains:
+                      type: object
+                      properties:
+                        horizon:
+                          const: NOW
+                      required:
+                        - horizon
+                    minContains: 1
+                required:
+                  - tasks
+              minContains: 1
+            primary_track_id:
+              type: string
+              minLength: 1
+            next_best_action_id:
+              type: string
+              minLength: 1
+          required:
+            - status
+            - tracks
+            - primary_track_id
+            - next_best_action_id
+        review:
+          properties:
+            review_at:
+              $ref: "#/$defs/DateOrDateTime"
+          required:
+            - review_at
+        threshold_provenance:
+          minItems: 1
+        teach_back:
+          properties:
+            status:
+              const: confirmed
+            decision_response:
+              enum:
+                - accepted
+                - revised
+            user_summary:
+              type: string
+              minLength: 1
+            accuracy:
+              const: accurate
+            owner_confirmed:
+              const: true
+            coverage:
+              type: object
+              properties:
+                owner_goal:
+                  properties:
+                    covered:
+                      const: true
+                problem:
+                  properties:
+                    covered:
+                      const: true
+                chosen_judgment:
+                  properties:
+                    covered:
+                      const: true
+                rejected_alternative:
+                  properties:
+                    covered:
+                      const: true
+                principal_tradeoff:
+                  properties:
+                    covered:
+                      const: true
+                key_thresholds:
+                  properties:
+                    covered:
+                      const: true
+                strongest_countercase:
+                  properties:
+                    covered:
+                      const: true
+                change_mind_conditions:
+                  properties:
+                    covered:
+                      const: true
+          required:
+            - status
+            - decision_response
+            - user_summary
+            - accuracy
+            - owner_confirmed
+            - coverage
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              const: ACTING
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        action_plan:
+          properties:
+            tracks:
+              contains:
+                type: object
+                properties:
+                  status:
+                    enum:
+                      - ready
+                      - in_progress
+                  tasks:
+                    type: array
+                    contains:
+                      type: object
+                      properties:
+                        horizon:
+                          const: NOW
+                        status:
+                          enum:
+                            - ready
+                            - in_progress
+                        start_condition:
+                          type: string
+                          minLength: 1
+                        observation_window:
+                          type: string
+                          minLength: 1
+                        validation_signal_ids:
+                          type: array
+                          minItems: 1
+                        case_owner_accepted:
+                          const: true
+                        accepted_at:
+                          $ref: "#/$defs/ISODateTime"
+                      required:
+                        - horizon
+                        - status
+                        - owner
+                        - start_condition
+                        - observation_window
+                        - validation_signal_ids
+                        - stop_continue_rule
+                        - case_owner_accepted
+                        - accepted_at
+                    minContains: 1
+                required:
+                  - status
+                  - tasks
+              minContains: 1
+          required:
+            - tracks
+        audit:
+          properties:
+            decision_locked_at:
+              $ref: "#/$defs/ISODateTime"
+            decision_snapshot_sha256:
+              type: string
+              pattern: "^[a-f0-9]{64}$"
+          required:
+            - decision_locked_at
+            - decision_snapshot_sha256
+        decision_snapshot:
+          properties:
+            status:
+              const: locked
+            snapshot_id:
+              type: string
+              minLength: 1
+            version:
+              type: integer
+              minimum: 1
+            decision_id:
+              type: string
+              minLength: 1
+            judgment:
+              type: string
+              minLength: 1
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+            prediction_ids:
+              minItems: 1
+            active_threshold_versions:
+              minItems: 1
+            tradeoffs:
+              minItems: 1
+            now_action_ids:
+              minItems: 1
+            locked_at:
+              $ref: "#/$defs/ISODateTime"
+            payload_sha256:
+              type: string
+              pattern: "^[a-f0-9]{64}$"
+          required:
+            - status
+            - snapshot_id
+            - version
+            - decision_id
+            - judgment
+            - confidence
+            - prediction_ids
+            - active_threshold_versions
+            - tradeoffs
+            - now_action_ids
+            - locked_at
+            - payload_sha256
+  # G-06 fail-closed: REVIEW_DUE and later require a comparable observation,
+  # but do not require an action to remain ready/in_progress.
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - REVIEW_DUE
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        review:
+          properties:
+            readiness:
+              type: object
+              properties:
+                status:
+                  const: ready
+                basis:
+                  enum:
+                    - attempted
+                    - intentionally_not_attempted
+                    - blocked
+                    - observation_window_elapsed
+                observation_claim_ids:
+                  minItems: 1
+                decision_snapshot_available:
+                  const: true
+                predictions_available:
+                  const: true
+                assessed_at:
+                  $ref: "#/$defs/ISODateTime"
+              required:
+                - status
+                - basis
+                - observation_claim_ids
+                - decision_snapshot_available
+                - predictions_available
+                - assessed_at
+          required:
+            - readiness
+        audit:
+          properties:
+            decision_locked_at:
+              $ref: "#/$defs/ISODateTime"
+            decision_snapshot_sha256:
+              type: string
+              pattern: "^[a-f0-9]{64}$"
+          required:
+            - decision_locked_at
+            - decision_snapshot_sha256
+        decision_snapshot:
+          properties:
+            status:
+              const: locked
+          required:
+            - status
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              enum:
+                - REVIEWED
+                - ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        review:
+          properties:
+            status:
+              const: completed
+            outcome:
+              $ref: "#/$defs/Outcome"
+            aar:
+              allOf:
+                - $ref: "#/$defs/AAR"
+                - type: object
+                  properties:
+                    judgment_updates:
+                      minItems: 1
+                      items:
+                        type: object
+                        properties:
+                          owner_disposition:
+                            enum:
+                              - confirmed
+                              - revised
+                              - rejected
+                          user_confirmed:
+                            const: true
+                        required:
+                          - owner_disposition
+                          - user_confirmed
+                  required:
+                    - judgment_updates
+                    - learning_diagnosis
+          required:
+            - status
+            - outcome
+            - aar
+  # G-08 fail-closed: ARCHIVED requires explicit closure and disposition of
+  # every material unresolved issue. Cross-Case links are validated by the app.
+  - if:
+      properties:
+        identity:
+          properties:
+            status:
+              const: ARCHIVED
+          required:
+            - status
+      required:
+        - identity
+    then:
+      properties:
+        unresolved_issues:
+          items:
+            type: object
+            properties:
+              status:
+                enum:
+                  - resolved
+                  - accepted_unknown
+                  - deferred
+              disposition:
+                enum:
+                  - accepted_uncertainty
+                  - carried_forward
+                  - resolved
+            required:
+              - status
+              - disposition
+        review:
+          anyOf:
+            - properties:
+                next_decision_at:
+                  $ref: "#/$defs/DateOrDateTime"
+              required:
+                - next_decision_at
+            - properties:
+                closure_reason:
+                  type: string
+                  minLength: 1
+              required:
+                - closure_reason
+
+$defs:
+  NonEmptyString:
+    type: string
+    minLength: 1
+  NullableString:
+    oneOf:
+      - $ref: "#/$defs/NonEmptyString"
+      - type: "null"
+  ISODate:
+    type: string
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+  ISODateTime:
+    type: string
+    format: date-time
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+  NullableDate:
+    oneOf:
+      - $ref: "#/$defs/ISODate"
+      - type: "null"
+  NullableDateTime:
+    oneOf:
+      - $ref: "#/$defs/ISODateTime"
+      - type: "null"
+  DateOrDateTime:
+    anyOf:
+      - $ref: "#/$defs/ISODate"
+      - $ref: "#/$defs/ISODateTime"
+  NullableDateOrDateTime:
+    oneOf:
+      - $ref: "#/$defs/DateOrDateTime"
+      - type: "null"
+  Confidence:
+    type: number
+    minimum: 0
+    maximum: 1
+  StringList:
+    type: array
+    items:
+      $ref: "#/$defs/NonEmptyString"
+    uniqueItems: true
+  ClaimType:
+    type: string
+    enum:
+      - observed_fact
+      - user_interpretation
+      - self_label
+      - expert_hypothesis
+      - expert_heuristic
+      - external_evidence
+      - market_signal
+      - recommendation
+  CaseStatus:
+    type: string
+    enum:
+      - DRAFT
+      - CLARIFYING
+      - MODELED
+      - DECIDING
+      - PLANNED
+      - ACTING
+      - REVIEW_DUE
+      - REVIEWED
+      - ARCHIVED
+  PersonRef:
+    type: object
+    additionalProperties: false
+    required:
+      - person_id
+      - display_name
+      - role
+    properties:
+      person_id:
+        $ref: "#/$defs/NonEmptyString"
+      display_name:
+        $ref: "#/$defs/NonEmptyString"
+      role:
+        type: string
+        enum:
+          - case_owner
+          - advisor
+          - facilitator
+          - evaluator
+          - system
+          - stakeholder
+  CaseOwnerRef:
+    description: >-
+      A role-constrained reference used wherever final goal, decision, or Gate
+      sovereignty belongs to the Case Owner rather than an Advisor or Copilot.
+    type: object
+    additionalProperties: false
+    required:
+      - person_id
+      - display_name
+      - role
+    properties:
+      person_id:
+        $ref: "#/$defs/NonEmptyString"
+      display_name:
+        $ref: "#/$defs/NonEmptyString"
+      role:
+        const: case_owner
+  SourceLocator:
+    type: object
+    additionalProperties: false
+    required:
+      - locator_type
+      - value
+    properties:
+      locator_type:
+        type: string
+        enum:
+          - timestamp
+          - line_range
+          - page
+          - heading
+          - paragraph
+          - url_fragment
+          - record_id
+          - event_id
+      value:
+        $ref: "#/$defs/NonEmptyString"
+      verbatim_excerpt:
+        $ref: "#/$defs/NullableString"
+  SourceRef:
+    type: object
+    additionalProperties: false
+    required:
+      - source_id
+      - source_type
+      - title
+      - uri_or_path
+      - content_sha256
+      - captured_at
+      - source_role
+    properties:
+      source_id:
+        $ref: "#/$defs/NonEmptyString"
+      source_type:
+        type: string
+        enum:
+          - transcript
+          - user_input
+          - personal_knowledge_base
+          - prd
+          - external_primary
+          - external_secondary
+          - advisor_statement
+          - experiment_result
+          - system_inference
+      title:
+        $ref: "#/$defs/NonEmptyString"
+      uri_or_path:
+        $ref: "#/$defs/NonEmptyString"
+      content_sha256:
+        type: string
+        pattern: "^[a-f0-9]{64}$"
+      captured_at:
+        $ref: "#/$defs/ISODateTime"
+      source_role:
+        type: string
+        enum:
+          - case_evidence
+          - candidate_rule
+          - product_requirement
+          - evaluation_input
+      notes:
+        $ref: "#/$defs/NullableString"
+  Identity:
+    type: object
+    additionalProperties: false
+    required:
+      - case_id
+      - title
+      - owner
+      - decision_owner
+      - status
+      - created_at
+      - updated_at
+      - version
+    properties:
+      case_id:
+        type: string
+        pattern: "^THK-[0-9]{3,}$"
+      title:
+        $ref: "#/$defs/NonEmptyString"
+      owner:
+        $ref: "#/$defs/CaseOwnerRef"
+      decision_owner:
+        $ref: "#/$defs/CaseOwnerRef"
+      status:
+        $ref: "#/$defs/CaseStatus"
+      created_at:
+        $ref: "#/$defs/ISODateTime"
+      updated_at:
+        $ref: "#/$defs/ISODateTime"
+      version:
+        type: integer
+        minimum: 1
+  ContextItem:
+    type: object
+    additionalProperties: false
+    required:
+      - context_id
+      - statement
+      - claim_ids
+      - relevance
+    properties:
+      context_id:
+        $ref: "#/$defs/NonEmptyString"
+      statement:
+        $ref: "#/$defs/NonEmptyString"
+      claim_ids:
+        $ref: "#/$defs/StringList"
+      relevance:
+        type: string
+        enum:
+          - critical
+          - high
+          - medium
+          - low
+  RelationshipTemperature:
+    type: object
+    additionalProperties: false
+    required:
+      - relationship_id
+      - segment
+      - temperature
+      - operational_definition
+      - evidence_claim_ids
+      - confidence
+      - observed_at
+      - implication
+    properties:
+      relationship_id:
+        $ref: "#/$defs/NonEmptyString"
+      segment:
+        $ref: "#/$defs/NonEmptyString"
+      temperature:
+        type: string
+        enum:
+          - warm
+          - cold
+          - unknown
+      operational_definition:
+        description: >-
+          Observable definition for this segment, such as prior purchase,
+          years connected, referral, weak tie, or first contact. Temperature
+          labels without an operational definition are not evidence.
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+      confidence:
+        $ref: "#/$defs/Confidence"
+      observed_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      implication:
+        $ref: "#/$defs/NonEmptyString"
+  Context:
+    type: object
+    additionalProperties: false
+    required:
+      - original_question
+      - decision_scope
+      - background
+      - urgency
+      - stakes
+      - reversibility
+      - time_horizon
+      - relationship_temperature_applicability
+      - relationship_temperature
+      - advisor_incentive_applicability
+      - contradiction_assessment
+      - critical_issue_disposition
+      - explicit_constraints
+      - excluded_scope
+    properties:
+      original_question:
+        $ref: "#/$defs/NonEmptyString"
+      decision_scope:
+        $ref: "#/$defs/NonEmptyString"
+      background:
+        type: array
+        items:
+          $ref: "#/$defs/ContextItem"
+      urgency:
+        type: string
+        enum:
+          - immediate
+          - within_7_days
+          - within_30_days
+          - this_quarter
+          - no_fixed_deadline
+      stakes:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+          - critical
+      reversibility:
+        type: string
+        enum:
+          - easy
+          - moderate
+          - difficult
+          - irreversible
+      time_horizon:
+        $ref: "#/$defs/NonEmptyString"
+      relationship_temperature_applicability:
+        type: string
+        enum:
+          - not_assessed
+          - required
+          - not_material
+      relationship_temperature:
+        type: array
+        items:
+          $ref: "#/$defs/RelationshipTemperature"
+      advisor_incentive_applicability:
+        description: >-
+          Whether material Advisor advice exists and therefore requires an
+          AdvisorIncentive record before Reality Sufficiency can pass.
+        type: string
+        enum:
+          - not_assessed
+          - required
+          - none_identified
+      contradiction_assessment:
+        description: >-
+          Whether material contradictions were sought and, when found, retained
+          as contested/refuted claims or unresolved issues.
+        type: string
+        enum:
+          - not_assessed
+          - none_identified
+          - recorded
+      critical_issue_disposition:
+        description: >-
+          Whether critical evidence gaps or blockers were sought and have an
+          explicit UnresolvedIssue disposition before modeling proceeds.
+        type: string
+        enum:
+          - not_assessed
+          - none_identified
+          - recorded
+      explicit_constraints:
+        $ref: "#/$defs/StringList"
+      excluded_scope:
+        $ref: "#/$defs/StringList"
+    allOf:
+      - if:
+          properties:
+            relationship_temperature_applicability:
+              const: required
+          required:
+            - relationship_temperature_applicability
+        then:
+          properties:
+            relationship_temperature:
+              minItems: 1
+  SuccessCriterion:
+    type: object
+    additionalProperties: false
+    required:
+      - criterion_id
+      - indicator
+      - acceptance_test
+      - target
+      - baseline
+      - deadline
+      - evidence_required
+      - status
+    properties:
+      criterion_id:
+        $ref: "#/$defs/NonEmptyString"
+      indicator:
+        $ref: "#/$defs/NonEmptyString"
+      acceptance_test:
+        $ref: "#/$defs/NonEmptyString"
+      target:
+        oneOf:
+          - type: string
+            minLength: 1
+          - type: number
+          - type: boolean
+      baseline:
+        oneOf:
+          - type: string
+            minLength: 1
+          - type: number
+          - type: boolean
+          - type: "null"
+      deadline:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      evidence_required:
+        $ref: "#/$defs/StringList"
+      status:
+        type: string
+        enum:
+          - pending
+          - met
+          - not_met
+          - inconclusive
+  OwnerGoal:
+    type: object
+    additionalProperties: false
+    required:
+      - statement
+      - priority
+      - acceptable_costs
+      - unacceptable_costs
+      - source_claim_ids
+      - user_confirmed
+      - confirmed_at
+    properties:
+      statement:
+        $ref: "#/$defs/NullableString"
+      priority:
+        type: string
+        enum:
+          - primary
+          - secondary
+          - exploratory
+      acceptable_costs:
+        $ref: "#/$defs/StringList"
+      unacceptable_costs:
+        $ref: "#/$defs/StringList"
+      source_claim_ids:
+        $ref: "#/$defs/StringList"
+      user_confirmed:
+        type: boolean
+      confirmed_at:
+        $ref: "#/$defs/NullableDateTime"
+  GoalAlignmentAssessment:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - advisor_default_goal_ids
+      - conflict_summary
+      - assessed_at
+      - owner_acknowledged
+    properties:
+      status:
+        type: string
+        enum:
+          - not_assessed
+          - aligned
+          - partially_aligned
+          - conflicting
+          - no_advisor
+          - unknown
+      advisor_default_goal_ids:
+        description: "AdvisorIncentive IDs whose default goals were assessed."
+        $ref: "#/$defs/StringList"
+      conflict_summary:
+        $ref: "#/$defs/NullableString"
+      assessed_at:
+        $ref: "#/$defs/NullableDateTime"
+      owner_acknowledged:
+        type: boolean
+    allOf:
+      - if:
+          properties:
+            status:
+              enum:
+                - partially_aligned
+                - conflicting
+          required:
+            - status
+        then:
+          properties:
+            conflict_summary:
+              type: string
+              minLength: 1
+          required:
+            - conflict_summary
+  SuccessContract:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - owner_goal
+      - goal_alignment
+      - desired_outcome
+      - success_criteria
+      - failure_conditions
+      - non_goals
+      - review_by
+      - user_confirmed
+      - confirmed_at
+    properties:
+      status:
+        type: string
+        enum:
+          - not_started
+          - draft
+          - confirmed
+          - superseded
+      owner_goal:
+        $ref: "#/$defs/OwnerGoal"
+      goal_alignment:
+        $ref: "#/$defs/GoalAlignmentAssessment"
+      desired_outcome:
+        $ref: "#/$defs/NullableString"
+      success_criteria:
+        type: array
+        items:
+          $ref: "#/$defs/SuccessCriterion"
+      failure_conditions:
+        $ref: "#/$defs/StringList"
+      non_goals:
+        $ref: "#/$defs/StringList"
+      review_by:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      user_confirmed:
+        type: boolean
+      confirmed_at:
+        $ref: "#/$defs/NullableDateTime"
+  ClarityGap:
+    type: object
+    additionalProperties: false
+    required:
+      - gap_id
+      - category
+      - question
+      - why_it_matters
+      - impact
+      - status
+      - owner
+      - next_action
+      - due_at
+      - related_claim_ids
+    properties:
+      gap_id:
+        $ref: "#/$defs/NonEmptyString"
+      category:
+        type: string
+        enum:
+          - goal
+          - success_criterion
+          - fact
+          - assumption
+          - constraint
+          - unknown
+          - conflicting_evidence
+          - stakeholder
+          - decision_rights
+          - time_horizon
+          - metric
+          - evidence
+      question:
+        $ref: "#/$defs/NonEmptyString"
+      why_it_matters:
+        $ref: "#/$defs/NonEmptyString"
+      impact:
+        type: string
+        enum:
+          - blocker
+          - high
+          - medium
+          - low
+      status:
+        type: string
+        enum:
+          - open
+          - answered
+          - resolved
+          - accepted_unknown
+          - deferred
+      owner:
+        $ref: "#/$defs/PersonRef"
+      next_action:
+        $ref: "#/$defs/NullableString"
+      due_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      related_claim_ids:
+        $ref: "#/$defs/StringList"
+  ClarityGaps:
+    type: object
+    additionalProperties: false
+    required:
+      - triage_status
+      - assessed_at
+      - gaps
+      - gate_decision
+      - gate_rationale
+      - route_status
+      - route_handling
+      - next_state
+      - user_confirmed
+    properties:
+      triage_status:
+        type: string
+        enum:
+          - not_assessed
+          - incomplete
+          - ready
+          - blocked
+      assessed_at:
+        $ref: "#/$defs/NullableDateTime"
+      gaps:
+        type: array
+        items:
+          $ref: "#/$defs/ClarityGap"
+      gate_decision:
+        description: >-
+          Clarity Triage routing decision inside DRAFT; this is a gate result,
+          not a persistent case status. not_assessed is an initialization
+          sentinel, not a sixth route; completed triage chooses one of the five
+          substantive routes below.
+        type: string
+        enum:
+          - not_assessed
+          - full_case
+          - evidence_first
+          - small_reversible_action
+          - no_framework_needed
+          - cannot_proceed
+      gate_rationale:
+        $ref: "#/$defs/NonEmptyString"
+      route_status:
+        description: >-
+          Lifecycle state of the selected DRAFT-internal route. A route can be
+          selected before its evidence action, reversible action, direct answer,
+          or blocker disposition has been handled.
+        type: string
+        enum:
+          - not_selected
+          - selected
+          - in_progress
+          - ready_for_transition
+          - completed_in_draft
+          - blocked
+      route_handling:
+        description: >-
+          Concrete handling and rerun rule for this route. It is not a hidden
+          durable Case status and must not be used to bypass a Gate.
+        $ref: "#/$defs/NonEmptyString"
+      next_state:
+        description: >-
+          Only full_case may select CLARIFYING. All other G-01 routes stay in
+          DRAFT until they close there or their evidence/blocker changes and
+          Clarity Triage is rerun.
+        type: string
+        enum:
+          - DRAFT
+          - CLARIFYING
+      user_confirmed:
+        type: boolean
+    allOf:
+      - if:
+          properties:
+            gate_decision:
+              const: not_assessed
+          required:
+            - gate_decision
+        then:
+          properties:
+            route_status:
+              const: not_selected
+            next_state:
+              const: DRAFT
+      - if:
+          properties:
+            gate_decision:
+              const: full_case
+          required:
+            - gate_decision
+        then:
+          properties:
+            next_state:
+              const: CLARIFYING
+            route_status:
+              enum:
+                - selected
+                - ready_for_transition
+      - if:
+          properties:
+            gate_decision:
+              enum:
+                - evidence_first
+                - small_reversible_action
+                - no_framework_needed
+                - cannot_proceed
+          required:
+            - gate_decision
+        then:
+          properties:
+            next_state:
+              const: DRAFT
+      - if:
+          properties:
+            gate_decision:
+              const: evidence_first
+          required:
+            - gate_decision
+        then:
+          properties:
+            route_status:
+              enum:
+                - selected
+                - in_progress
+                - completed_in_draft
+      - if:
+          properties:
+            gate_decision:
+              const: small_reversible_action
+          required:
+            - gate_decision
+        then:
+          properties:
+            route_status:
+              enum:
+                - selected
+                - in_progress
+                - completed_in_draft
+      - if:
+          properties:
+            gate_decision:
+              const: no_framework_needed
+          required:
+            - gate_decision
+        then:
+          properties:
+            route_status:
+              enum:
+                - selected
+                - completed_in_draft
+      - if:
+          properties:
+            gate_decision:
+              const: cannot_proceed
+          required:
+            - gate_decision
+        then:
+          properties:
+            route_status:
+              const: blocked
+  EvidenceClaim:
+    type: object
+    additionalProperties: false
+    required:
+      - claim_id
+      - claim_type
+      - evidence_form
+      - statement
+      - source
+      - source_locator
+      - speaker
+      - attribution_status
+      - attribution_ambiguity
+      - observed_at
+      - epistemic_status
+      - confidence
+      - relevance
+      - supports_hypothesis_ids
+      - contradicts_hypothesis_ids
+      - falsified_when
+      - review_by
+      - advisor_incentive_id
+      - user_confirmed
+    properties:
+      claim_id:
+        $ref: "#/$defs/NonEmptyString"
+      claim_type:
+        $ref: "#/$defs/ClaimType"
+      evidence_form:
+        description: >-
+          How the evidence exists independently of what epistemic role the
+          claim plays. For example, expert_hypothesis may be testimony while an
+          observed_fact may be a document or direct observation.
+        type: string
+        enum:
+          - testimony
+          - document
+          - system_record
+          - direct_observation
+          - experiment_result
+          - estimate
+          - inference
+          - synthesis
+      statement:
+        $ref: "#/$defs/NonEmptyString"
+      source:
+        $ref: "#/$defs/SourceRef"
+      source_locator:
+        $ref: "#/$defs/SourceLocator"
+      speaker:
+        description: >-
+          Person whose speech or authored statement is being attributed. Null
+          is valid for non-speech records or when attribution is genuinely unknown.
+        oneOf:
+          - $ref: "#/$defs/PersonRef"
+          - type: "null"
+      attribution_status:
+        type: string
+        enum:
+          - explicit
+          - inferred
+          - not_applicable
+          - ambiguous
+          - unknown
+      attribution_ambiguity:
+        description: >-
+          Records overlapping speech, uncertain diarization, paraphrase, or
+          another attribution limit. Required text is enforced when status is
+          ambiguous or unknown.
+        $ref: "#/$defs/NullableString"
+      observed_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      epistemic_status:
+        type: string
+        enum:
+          - asserted
+          - corroborated
+          - contested
+          - refuted
+          - outdated
+      confidence:
+        $ref: "#/$defs/Confidence"
+      relevance:
+        type: string
+        enum:
+          - critical
+          - high
+          - medium
+          - low
+      supports_hypothesis_ids:
+        $ref: "#/$defs/StringList"
+      contradicts_hypothesis_ids:
+        $ref: "#/$defs/StringList"
+      falsified_when:
+        $ref: "#/$defs/StringList"
+      review_by:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      advisor_incentive_id:
+        $ref: "#/$defs/NullableString"
+      user_confirmed:
+        type: boolean
+    allOf:
+      - if:
+          properties:
+            attribution_status:
+              enum:
+                - ambiguous
+                - unknown
+          required:
+            - attribution_status
+        then:
+          properties:
+            attribution_ambiguity:
+              type: string
+              minLength: 1
+          required:
+            - attribution_ambiguity
+      - if:
+          properties:
+            evidence_form:
+              const: testimony
+            attribution_status:
+              enum:
+                - explicit
+                - inferred
+          required:
+            - evidence_form
+            - attribution_status
+        then:
+          properties:
+            speaker:
+              $ref: "#/$defs/PersonRef"
+  HypothesisPrediction:
+    type: object
+    additionalProperties: false
+    required:
+      - prediction_id
+      - condition
+      - expected_observation
+      - check_by
+      - evidence_source
+      - status
+    properties:
+      prediction_id:
+        $ref: "#/$defs/NonEmptyString"
+      condition:
+        $ref: "#/$defs/NonEmptyString"
+      expected_observation:
+        $ref: "#/$defs/NonEmptyString"
+      check_by:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      evidence_source:
+        $ref: "#/$defs/NonEmptyString"
+      status:
+        type: string
+        enum:
+          - pending
+          - observed
+          - not_observed
+          - inconclusive
+  Hypothesis:
+    type: object
+    additionalProperties: false
+    required:
+      - hypothesis_id
+      - statement
+      - explanatory_target
+      - status
+      - prior_confidence
+      - current_confidence
+      - supporting_claim_ids
+      - contradicting_claim_ids
+      - predictions
+      - falsified_when
+      - discriminated_from
+      - diagnostic_action_ids
+      - updated_at
+    properties:
+      hypothesis_id:
+        $ref: "#/$defs/NonEmptyString"
+      statement:
+        $ref: "#/$defs/NonEmptyString"
+      explanatory_target:
+        $ref: "#/$defs/NonEmptyString"
+      status:
+        type: string
+        enum:
+          - untested
+          - active
+          - leading
+          - weakened
+          - refuted
+          - retained_as_alternative
+      prior_confidence:
+        $ref: "#/$defs/Confidence"
+      current_confidence:
+        $ref: "#/$defs/Confidence"
+      supporting_claim_ids:
+        $ref: "#/$defs/StringList"
+      contradicting_claim_ids:
+        $ref: "#/$defs/StringList"
+      predictions:
+        type: array
+        items:
+          $ref: "#/$defs/HypothesisPrediction"
+      falsified_when:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+      discriminated_from:
+        $ref: "#/$defs/StringList"
+      diagnostic_action_ids:
+        $ref: "#/$defs/StringList"
+      updated_at:
+        $ref: "#/$defs/ISODateTime"
+  HypothesisUpdate:
+    type: object
+    additionalProperties: false
+    required:
+      - hypothesis_id
+      - confidence_before
+      - confidence_after
+      - direction
+      - reason
+      - evidence_claim_ids
+    properties:
+      hypothesis_id:
+        $ref: "#/$defs/NonEmptyString"
+      confidence_before:
+        $ref: "#/$defs/Confidence"
+      confidence_after:
+        $ref: "#/$defs/Confidence"
+      direction:
+        type: string
+        enum:
+          - strengthened
+          - weakened
+          - unchanged
+          - refuted
+      reason:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+  QuestionAnswerTurn:
+    type: object
+    additionalProperties: false
+    required:
+      - turn_id
+      - sequence
+      - asked_at
+      - answered_at
+      - asked_by
+      - answered_by
+      - question
+      - purpose
+      - targeted_gap_ids
+      - targeted_hypothesis_ids
+      - answer
+      - answer_status
+      - claim_ids
+      - diagnostic_action
+      - information_gain
+      - hypothesis_updates
+      - why_next
+      - unresolved_after
+    properties:
+      turn_id:
+        $ref: "#/$defs/NonEmptyString"
+      sequence:
+        type: integer
+        minimum: 1
+      asked_at:
+        $ref: "#/$defs/ISODateTime"
+      answered_at:
+        $ref: "#/$defs/NullableDateTime"
+      asked_by:
+        $ref: "#/$defs/PersonRef"
+      answered_by:
+        oneOf:
+          - $ref: "#/$defs/PersonRef"
+          - type: "null"
+      question:
+        $ref: "#/$defs/NonEmptyString"
+      purpose:
+        type: string
+        enum:
+          - clarify_goal
+          - define_success
+          - verify_fact
+          - expose_assumption
+          - distinguish_hypotheses
+          - identify_constraint
+          - quantify_baseline
+          - surface_tradeoff
+          - test_commitment
+          - capture_outcome
+          - review_learning
+      targeted_gap_ids:
+        $ref: "#/$defs/StringList"
+      targeted_hypothesis_ids:
+        $ref: "#/$defs/StringList"
+      answer:
+        $ref: "#/$defs/NullableString"
+      answer_status:
+        type: string
+        enum:
+          - answered
+          - partial
+          - refused
+          - unanswered
+          - not_applicable
+      claim_ids:
+        description: >-
+          References atomic evidence-ledger claims. If one answer contains more
+          than one claim type, create multiple claims rather than assigning
+          multiple epistemic labels to one claim.
+        $ref: "#/$defs/StringList"
+      diagnostic_action:
+        $ref: "#/$defs/NullableString"
+      information_gain:
+        type: string
+        enum:
+          - high
+          - medium
+          - low
+          - none
+          - unknown
+      hypothesis_updates:
+        type: array
+        items:
+          $ref: "#/$defs/HypothesisUpdate"
+      why_next:
+        $ref: "#/$defs/NullableString"
+      unresolved_after:
+        $ref: "#/$defs/StringList"
+  ProblemModel:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - symptom
+      - reframed_problem
+      - root_hypothesis_ids
+      - key_constraint
+      - leverage_point
+      - ambiguity_material
+      - alternative_exclusion_rationale
+      - excluded_explanations
+      - confirmation_claim_ids
+      - user_confirmed
+      - confirmed_at
+    properties:
+      status:
+        type: string
+        enum:
+          - not_started
+          - draft
+          - confirmed
+          - superseded
+      symptom:
+        $ref: "#/$defs/NullableString"
+      reframed_problem:
+        $ref: "#/$defs/NullableString"
+      root_hypothesis_ids:
+        $ref: "#/$defs/StringList"
+      key_constraint:
+        $ref: "#/$defs/NullableString"
+      leverage_point:
+        $ref: "#/$defs/NullableString"
+      ambiguity_material:
+        description: >-
+          True when two or more live explanations would lead to meaningfully
+          different decisions or actions. Only then are two competing
+          hypotheses mandatory.
+        type: boolean
+      alternative_exclusion_rationale:
+        description: >-
+          Required from MODELED onward when ambiguity_material is false; records
+          why a second hypothesis would be performative rather than informative.
+        $ref: "#/$defs/NullableString"
+      excluded_explanations:
+        $ref: "#/$defs/StringList"
+      confirmation_claim_ids:
+        $ref: "#/$defs/StringList"
+      user_confirmed:
+        type: boolean
+      confirmed_at:
+        $ref: "#/$defs/NullableDateTime"
+  DecisionCriterion:
+    type: object
+    additionalProperties: false
+    required:
+      - criterion_id
+      - name
+      - priority
+      - measurement
+      - threshold_ids
+    properties:
+      criterion_id:
+        $ref: "#/$defs/NonEmptyString"
+      name:
+        $ref: "#/$defs/NonEmptyString"
+      priority:
+        type: integer
+        minimum: 1
+      measurement:
+        $ref: "#/$defs/NonEmptyString"
+      threshold_ids:
+        $ref: "#/$defs/StringList"
+  DecisionOption:
+    type: object
+    additionalProperties: false
+    required:
+      - option_id
+      - name
+      - description
+      - option_type
+      - benefits
+      - costs
+      - opportunity_cost
+      - risks
+      - reversibility
+      - prerequisite_claim_ids
+    properties:
+      option_id:
+        $ref: "#/$defs/NonEmptyString"
+      name:
+        $ref: "#/$defs/NonEmptyString"
+      description:
+        $ref: "#/$defs/NonEmptyString"
+      option_type:
+        type: string
+        enum:
+          - act
+          - stop
+          - defer
+          - experiment
+          - status_quo
+      benefits:
+        $ref: "#/$defs/StringList"
+      costs:
+        $ref: "#/$defs/StringList"
+      opportunity_cost:
+        $ref: "#/$defs/NonEmptyString"
+      risks:
+        $ref: "#/$defs/StringList"
+      reversibility:
+        type: string
+        enum:
+          - easy
+          - moderate
+          - difficult
+          - irreversible
+      prerequisite_claim_ids:
+        $ref: "#/$defs/StringList"
+  CriterionScore:
+    type: object
+    additionalProperties: false
+    required:
+      - option_id
+      - criterion_id
+      - score
+      - rationale
+      - evidence_claim_ids
+    properties:
+      option_id:
+        $ref: "#/$defs/NonEmptyString"
+      criterion_id:
+        $ref: "#/$defs/NonEmptyString"
+      score:
+        type: number
+      rationale:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+  DecisionPrediction:
+    type: object
+    additionalProperties: false
+    required:
+      - prediction_id
+      - statement
+      - confidence
+      - check_by
+      - outcome_measure
+      - threshold_ids
+    properties:
+      prediction_id:
+        $ref: "#/$defs/NonEmptyString"
+      statement:
+        $ref: "#/$defs/NonEmptyString"
+      confidence:
+        $ref: "#/$defs/Confidence"
+      check_by:
+        $ref: "#/$defs/DateOrDateTime"
+      outcome_measure:
+        $ref: "#/$defs/NonEmptyString"
+      threshold_ids:
+        $ref: "#/$defs/StringList"
+  OptionSetException:
+    type: object
+    additionalProperties: false
+    required:
+      - only_one_feasible
+      - rationale
+      - evidence_claim_ids
+    properties:
+      only_one_feasible:
+        const: true
+      rationale:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+  Decision:
+    type: object
+    additionalProperties: false
+    required:
+      - decision_id
+      - status
+      - decision_question
+      - decision_owner
+      - criteria
+      - options
+      - option_set_exception
+      - comparison
+      - selected_option_id
+      - current_best_judgment
+      - confidence
+      - key_basis_claim_ids
+      - strongest_counterargument
+      - change_mind_conditions
+      - predictions
+      - dissent
+      - decided_at
+      - user_confirmed
+    properties:
+      decision_id:
+        $ref: "#/$defs/NonEmptyString"
+      status:
+        type: string
+        enum:
+          - not_started
+          - draft
+          - proposed
+          - confirmed
+          - superseded
+      decision_question:
+        $ref: "#/$defs/NullableString"
+      decision_owner:
+        $ref: "#/$defs/CaseOwnerRef"
+      criteria:
+        type: array
+        items:
+          $ref: "#/$defs/DecisionCriterion"
+      options:
+        type: array
+        items:
+          $ref: "#/$defs/DecisionOption"
+      option_set_exception:
+        oneOf:
+          - $ref: "#/$defs/OptionSetException"
+          - type: "null"
+      comparison:
+        type: array
+        items:
+          $ref: "#/$defs/CriterionScore"
+      selected_option_id:
+        $ref: "#/$defs/NullableString"
+      current_best_judgment:
+        $ref: "#/$defs/NullableString"
+      confidence:
+        oneOf:
+          - $ref: "#/$defs/Confidence"
+          - type: "null"
+      key_basis_claim_ids:
+        $ref: "#/$defs/StringList"
+      strongest_counterargument:
+        $ref: "#/$defs/NullableString"
+      change_mind_conditions:
+        $ref: "#/$defs/StringList"
+      predictions:
+        type: array
+        items:
+          $ref: "#/$defs/DecisionPrediction"
+      dissent:
+        $ref: "#/$defs/StringList"
+      decided_at:
+        $ref: "#/$defs/NullableDateTime"
+      user_confirmed:
+        type: boolean
+    allOf:
+      - if:
+          properties:
+            status:
+              enum:
+                - confirmed
+                - superseded
+          required:
+            - status
+        then:
+          anyOf:
+            - properties:
+                options:
+                  minItems: 2
+            - properties:
+                option_set_exception:
+                  $ref: "#/$defs/OptionSetException"
+  ThresholdVersionRef:
+    type: object
+    additionalProperties: false
+    required:
+      - threshold_id
+      - version
+    properties:
+      threshold_id:
+        $ref: "#/$defs/NonEmptyString"
+      version:
+        type: integer
+        minimum: 1
+  DecisionSnapshot:
+    description: >-
+      Immutable, retrievable payload frozen before ACTING. Corrections create a
+      new Case or snapshot version and retain the prior payload; the application
+      validator MUST canonicalize the payload, verify payload_sha256 equals the
+      Audit hash, resolve every reference, and prohibit in-place mutation.
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - snapshot_id
+      - version
+      - decision_id
+      - judgment
+      - confidence
+      - prediction_ids
+      - active_threshold_versions
+      - tradeoffs
+      - now_action_ids
+      - locked_at
+      - payload_sha256
+      - supersedes_snapshot_id
+      - correction_reason
+    properties:
+      status:
+        type: string
+        enum:
+          - not_created
+          - draft
+          - locked
+          - superseded
+      snapshot_id:
+        $ref: "#/$defs/NullableString"
+      version:
+        oneOf:
+          - type: integer
+            minimum: 1
+          - type: "null"
+      decision_id:
+        $ref: "#/$defs/NullableString"
+      judgment:
+        $ref: "#/$defs/NullableString"
+      confidence:
+        oneOf:
+          - $ref: "#/$defs/Confidence"
+          - type: "null"
+      prediction_ids:
+        $ref: "#/$defs/StringList"
+      active_threshold_versions:
+        type: array
+        items:
+          $ref: "#/$defs/ThresholdVersionRef"
+      tradeoffs:
+        $ref: "#/$defs/StringList"
+      now_action_ids:
+        $ref: "#/$defs/StringList"
+      locked_at:
+        $ref: "#/$defs/NullableDateTime"
+      payload_sha256:
+        oneOf:
+          - type: string
+            pattern: "^[a-f0-9]{64}$"
+          - type: "null"
+      supersedes_snapshot_id:
+        $ref: "#/$defs/NullableString"
+      correction_reason:
+        $ref: "#/$defs/NullableString"
+    allOf:
+      - if:
+          properties:
+            status:
+              enum:
+                - locked
+                - superseded
+          required:
+            - status
+        then:
+          properties:
+            snapshot_id:
+              type: string
+              minLength: 1
+            version:
+              type: integer
+              minimum: 1
+            decision_id:
+              type: string
+              minLength: 1
+            judgment:
+              type: string
+              minLength: 1
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+            prediction_ids:
+              minItems: 1
+            active_threshold_versions:
+              minItems: 1
+            tradeoffs:
+              minItems: 1
+            now_action_ids:
+              minItems: 1
+            locked_at:
+              $ref: "#/$defs/ISODateTime"
+            payload_sha256:
+              type: string
+              pattern: "^[a-f0-9]{64}$"
+  ValidationSignal:
+    type: object
+    additionalProperties: false
+    required:
+      - signal_id
+      - indicator
+      - collection_method
+      - threshold_ids
+      - check_on
+    properties:
+      signal_id:
+        $ref: "#/$defs/NonEmptyString"
+      indicator:
+        $ref: "#/$defs/NonEmptyString"
+      collection_method:
+        $ref: "#/$defs/NonEmptyString"
+      threshold_ids:
+        $ref: "#/$defs/StringList"
+      check_on:
+        $ref: "#/$defs/DateOrDateTime"
+  ActionTask:
+    type: object
+    additionalProperties: false
+    required:
+      - action_id
+      - description
+      - horizon
+      - related_track_id
+      - owner
+      - status
+      - start_condition
+      - start_on
+      - due_on
+      - observation_window
+      - validation_signal_ids
+      - stop_continue_rule
+      - dependencies
+      - deliverable
+      - evidence_required
+      - case_owner_accepted
+      - accepted_at
+      - completed_at
+    properties:
+      action_id:
+        $ref: "#/$defs/NonEmptyString"
+      description:
+        $ref: "#/$defs/NonEmptyString"
+      horizon:
+        type: string
+        enum:
+          - NOW
+          - NEXT
+          - LATER
+      related_track_id:
+        $ref: "#/$defs/NonEmptyString"
+      owner:
+        $ref: "#/$defs/PersonRef"
+      status:
+        type: string
+        enum:
+          - planned
+          - ready
+          - in_progress
+          - blocked
+          - completed
+          - stopped
+          - cancelled
+      start_condition:
+        $ref: "#/$defs/NonEmptyString"
+      start_on:
+        $ref: "#/$defs/NullableDate"
+      due_on:
+        $ref: "#/$defs/NullableDate"
+      observation_window:
+        $ref: "#/$defs/NonEmptyString"
+      validation_signal_ids:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+      stop_continue_rule:
+        $ref: "#/$defs/StopContinueRule"
+      dependencies:
+        $ref: "#/$defs/StringList"
+      deliverable:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_required:
+        $ref: "#/$defs/StringList"
+      case_owner_accepted:
+        type: boolean
+      accepted_at:
+        $ref: "#/$defs/NullableDateTime"
+      completed_at:
+        $ref: "#/$defs/NullableDateTime"
+  StopContinueRule:
+    type: object
+    additionalProperties: false
+    required:
+      - continue_when
+      - stop_when
+      - adapt_when
+      - threshold_ids
+      - decision_owner
+    properties:
+      continue_when:
+        $ref: "#/$defs/StringList"
+      stop_when:
+        $ref: "#/$defs/StringList"
+      adapt_when:
+        $ref: "#/$defs/StringList"
+      threshold_ids:
+        $ref: "#/$defs/StringList"
+      decision_owner:
+        $ref: "#/$defs/CaseOwnerRef"
+  CapacityBudget:
+    type: object
+    additionalProperties: false
+    required:
+      - period
+      - time_hours
+      - cash_amount
+      - currency
+      - max_concurrent_work_items
+      - assumptions
+    properties:
+      period:
+        description: "Budget window, for example 'per week' or 'through the next review milestone'."
+        $ref: "#/$defs/NonEmptyString"
+      time_hours:
+        type: number
+        minimum: 0
+      cash_amount:
+        type: number
+        minimum: 0
+      currency:
+        type: string
+        pattern: "^[A-Z]{3}$"
+      max_concurrent_work_items:
+        type: integer
+        minimum: 1
+      assumptions:
+        $ref: "#/$defs/StringList"
+  TrackHypothesis:
+    type: object
+    additionalProperties: false
+    required:
+      - statement
+      - linked_hypothesis_ids
+      - prediction
+      - falsified_when
+    properties:
+      statement:
+        $ref: "#/$defs/NonEmptyString"
+      linked_hypothesis_ids:
+        $ref: "#/$defs/StringList"
+      prediction:
+        $ref: "#/$defs/NonEmptyString"
+      falsified_when:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+  TrackGate:
+    type: object
+    additionalProperties: false
+    required:
+      - gate_id
+      - evaluate_on
+      - threshold_ids
+      - decision
+      - evidence_claim_ids
+      - rationale
+      - decided_at
+      - decision_owner
+    properties:
+      gate_id:
+        $ref: "#/$defs/NonEmptyString"
+      evaluate_on:
+        $ref: "#/$defs/DateOrDateTime"
+      threshold_ids:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+      decision:
+        type: string
+        enum:
+          - not_evaluated
+          - continue
+          - adapt
+          - stop
+          - pause
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+      rationale:
+        $ref: "#/$defs/NullableString"
+      decided_at:
+        $ref: "#/$defs/NullableDateTime"
+      decision_owner:
+        $ref: "#/$defs/CaseOwnerRef"
+  ActionTrack:
+    type: object
+    additionalProperties: false
+    required:
+      - track_id
+      - name
+      - track_type
+      - is_primary
+      - objective
+      - hypothesis
+      - applicability_context
+      - relationship_temperature_ids
+      - owner
+      - status
+      - start_on
+      - due_on
+      - capacity_budget
+      - dependencies
+      - planned_evidence_actions
+      - observation_claim_ids
+      - tasks
+      - validation_signals
+      - threshold_ids
+      - stop_continue_rule
+      - gate
+      - review_on
+      - outcome_claim_ids
+    properties:
+      track_id:
+        $ref: "#/$defs/NonEmptyString"
+      name:
+        $ref: "#/$defs/NonEmptyString"
+      track_type:
+        type: string
+        enum:
+          - primary_execution
+          - diagnostic_experiment
+          - evidence_collection
+          - maintenance
+          - stop_or_deprioritize
+      is_primary:
+        type: boolean
+      objective:
+        $ref: "#/$defs/NonEmptyString"
+      hypothesis:
+        $ref: "#/$defs/TrackHypothesis"
+      applicability_context:
+        $ref: "#/$defs/NonEmptyString"
+      relationship_temperature_ids:
+        $ref: "#/$defs/StringList"
+      owner:
+        $ref: "#/$defs/PersonRef"
+      status:
+        type: string
+        enum:
+          - planned
+          - ready
+          - in_progress
+          - blocked
+          - completed
+          - stopped
+          - cancelled
+      start_on:
+        $ref: "#/$defs/NullableDate"
+      due_on:
+        $ref: "#/$defs/NullableDate"
+      capacity_budget:
+        $ref: "#/$defs/CapacityBudget"
+      dependencies:
+        $ref: "#/$defs/StringList"
+      planned_evidence_actions:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+      observation_claim_ids:
+        $ref: "#/$defs/StringList"
+      tasks:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/ActionTask"
+      validation_signals:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/ValidationSignal"
+      threshold_ids:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+      stop_continue_rule:
+        $ref: "#/$defs/StopContinueRule"
+      gate:
+        $ref: "#/$defs/TrackGate"
+      review_on:
+        $ref: "#/$defs/DateOrDateTime"
+      outcome_claim_ids:
+        $ref: "#/$defs/StringList"
+  ActionPlan:
+    type: object
+    additionalProperties: false
+    required:
+      - plan_id
+      - status
+      - primary_track_id
+      - next_best_action_id
+      - concurrency_rationale
+      - tracks
+      - confirmed_at
+      - user_confirmed
+    properties:
+      plan_id:
+        $ref: "#/$defs/NonEmptyString"
+      status:
+        type: string
+        enum:
+          - not_started
+          - draft
+          - proposed
+          - confirmed
+          - in_progress
+          - completed
+          - superseded
+      primary_track_id:
+        $ref: "#/$defs/NullableString"
+      next_best_action_id:
+        $ref: "#/$defs/NullableString"
+      concurrency_rationale:
+        description: >-
+          Why parallel tracks are necessary and how they avoid diluting the
+          single Next Best Action. Exactly one track must be marked primary;
+          cross-record uniqueness is enforced by the application validator.
+        $ref: "#/$defs/NullableString"
+      tracks:
+        type: array
+        items:
+          $ref: "#/$defs/ActionTrack"
+      confirmed_at:
+        $ref: "#/$defs/NullableDateTime"
+      user_confirmed:
+        type: boolean
+  ThresholdValue:
+    oneOf:
+      - type: string
+        minLength: 1
+      - type: number
+      - type: boolean
+      - type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: number
+  Threshold:
+    type: object
+    additionalProperties: false
+    required:
+      - threshold_id
+      - version
+      - applies_to
+      - operator
+      - value
+      - unit
+      - denominator
+      - measurement_window
+      - segment_context
+      - decision_consequence
+      - revision_rule
+      - provenance_type
+      - source_claim_ids
+      - rationale
+      - confidence
+      - status
+      - approved_by
+      - approved_at
+      - review_by
+      - supersedes_threshold_id
+      - sensitivity_notes
+    properties:
+      threshold_id:
+        $ref: "#/$defs/NonEmptyString"
+      version:
+        description: >-
+          Monotonic version used by DecisionSnapshot. Threshold corrections
+          create a new version rather than editing the locked version in place.
+        type: integer
+        minimum: 1
+      applies_to:
+        $ref: "#/$defs/NonEmptyString"
+      operator:
+        type: string
+        enum:
+          - gte
+          - lte
+          - gt
+          - lt
+          - eq
+          - between
+          - change_by
+          - qualitative
+      value:
+        $ref: "#/$defs/ThresholdValue"
+      unit:
+        $ref: "#/$defs/NullableString"
+      denominator:
+        description: >-
+          The population or exposure base, such as 'per eligible attempt',
+          'among the defined cohort', or 'per measurement unit'. Null is allowed
+          only when the metric genuinely has no denominator.
+        $ref: "#/$defs/NullableString"
+      measurement_window:
+        $ref: "#/$defs/NonEmptyString"
+      segment_context:
+        description: "Named audience, channel, offer, and relevant operating context."
+        $ref: "#/$defs/NonEmptyString"
+      decision_consequence:
+        description: "What decision changes when this threshold is met or missed."
+        $ref: "#/$defs/NonEmptyString"
+      revision_rule:
+        description: >-
+          Prospective rule for revising this threshold when the baseline,
+          denominator, segment, or capacity changes; forbids silent hindsight edits.
+        $ref: "#/$defs/NonEmptyString"
+      provenance_type:
+        type: string
+        enum:
+          - user_commitment
+          - historical_baseline
+          - experiment_baseline
+          - external_benchmark
+          - advisor_recommendation
+          - model_suggestion
+          - regulatory_requirement
+      source_claim_ids:
+        $ref: "#/$defs/StringList"
+      rationale:
+        $ref: "#/$defs/NonEmptyString"
+      confidence:
+        $ref: "#/$defs/Confidence"
+      status:
+        type: string
+        enum:
+          - provisional
+          - approved
+          - rejected
+          - replaced
+      approved_by:
+        oneOf:
+          - $ref: "#/$defs/PersonRef"
+          - type: "null"
+      approved_at:
+        $ref: "#/$defs/NullableDateTime"
+      review_by:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      supersedes_threshold_id:
+        $ref: "#/$defs/NullableString"
+      sensitivity_notes:
+        $ref: "#/$defs/NonEmptyString"
+  TeachBackCorrection:
+    type: object
+    additionalProperties: false
+    required:
+      - issue
+      - correction
+      - accepted_by_user
+    properties:
+      issue:
+        $ref: "#/$defs/NonEmptyString"
+      correction:
+        $ref: "#/$defs/NonEmptyString"
+      accepted_by_user:
+        type: boolean
+  TeachBackElement:
+    type: object
+    additionalProperties: false
+    required:
+      - covered
+      - owner_words
+      - evaluator_notes
+    properties:
+      covered:
+        type: boolean
+      owner_words:
+        description: "Case Owner's own formulation, not copied assent."
+        $ref: "#/$defs/NullableString"
+      evaluator_notes:
+        $ref: "#/$defs/NullableString"
+  TeachBackCoverage:
+    type: object
+    additionalProperties: false
+    required:
+      - owner_goal
+      - problem
+      - chosen_judgment
+      - rejected_alternative
+      - principal_tradeoff
+      - key_thresholds
+      - strongest_countercase
+      - change_mind_conditions
+    properties:
+      owner_goal:
+        $ref: "#/$defs/TeachBackElement"
+      problem:
+        $ref: "#/$defs/TeachBackElement"
+      chosen_judgment:
+        $ref: "#/$defs/TeachBackElement"
+      rejected_alternative:
+        $ref: "#/$defs/TeachBackElement"
+      principal_tradeoff:
+        $ref: "#/$defs/TeachBackElement"
+      key_thresholds:
+        $ref: "#/$defs/TeachBackElement"
+      strongest_countercase:
+        $ref: "#/$defs/TeachBackElement"
+      change_mind_conditions:
+        $ref: "#/$defs/TeachBackElement"
+  TeachBack:
+    $comment: >-
+      Presence flags cannot prove understanding. The application validator MUST
+      compare semantic coverage against the frozen decision, detect copied or
+      assent-only text, preserve disagreement, and require human review until
+      that validator has been independently validated.
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - requested_at
+      - captured_at
+      - user_summary
+      - decision_response
+      - accuracy
+      - semantic_assessment_method
+      - coverage
+      - corrections
+      - referenced_claim_ids
+      - owner_confirmed
+      - unresolved
+    properties:
+      status:
+        type: string
+        enum:
+          - not_requested
+          - requested
+          - captured
+          - needs_correction
+          - confirmed
+      requested_at:
+        $ref: "#/$defs/NullableDateTime"
+      captured_at:
+        $ref: "#/$defs/NullableDateTime"
+      user_summary:
+        $ref: "#/$defs/NullableString"
+      decision_response:
+        type: string
+        enum:
+          - pending
+          - accepted
+          - revised
+          - rejected
+      accuracy:
+        type: string
+        enum:
+          - not_assessed
+          - accurate
+          - partially_accurate
+          - inaccurate
+      semantic_assessment_method:
+        type: string
+        enum:
+          - not_assessed
+          - human_review
+          - rule_based
+          - model_assisted_human_review
+      coverage:
+        $ref: "#/$defs/TeachBackCoverage"
+      corrections:
+        type: array
+        items:
+          $ref: "#/$defs/TeachBackCorrection"
+      referenced_claim_ids:
+        $ref: "#/$defs/StringList"
+      owner_confirmed:
+        type: boolean
+      unresolved:
+        $ref: "#/$defs/StringList"
+  UnresolvedIssue:
+    type: object
+    additionalProperties: false
+    required:
+      - issue_id
+      - category
+      - question
+      - impact
+      - blocking_phase
+      - owner
+      - next_action
+      - due_at
+      - status
+      - disposition
+      - decision_at
+      - carryover_case_id
+      - resolution
+      - resolved_at
+      - related_claim_ids
+    properties:
+      issue_id:
+        $ref: "#/$defs/NonEmptyString"
+      category:
+        type: string
+        enum:
+          - evidence_gap
+          - hypothesis_conflict
+          - stakeholder_disagreement
+          - execution_dependency
+          - threshold_uncertainty
+          - outcome_unknown
+          - ethical_or_safety_risk
+          - other
+      question:
+        $ref: "#/$defs/NonEmptyString"
+      impact:
+        type: string
+        enum:
+          - blocker
+          - high
+          - medium
+          - low
+      blocking_phase:
+        type: string
+        enum:
+          - none
+          - clarify
+          - model
+          - decide
+          - plan
+          - act
+          - review
+      owner:
+        $ref: "#/$defs/PersonRef"
+      next_action:
+        $ref: "#/$defs/NullableString"
+      due_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      status:
+        type: string
+        enum:
+          - open
+          - monitoring
+          - resolved
+          - accepted_unknown
+          - deferred
+      disposition:
+        type: string
+        enum:
+          - not_set
+          - evidence_action
+          - decision_date
+          - accepted_uncertainty
+          - carried_forward
+          - resolved
+      decision_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      carryover_case_id:
+        oneOf:
+          - type: string
+            pattern: "^THK-[0-9]{3,}$"
+          - type: "null"
+      resolution:
+        $ref: "#/$defs/NullableString"
+      resolved_at:
+        $ref: "#/$defs/NullableDateTime"
+      related_claim_ids:
+        $ref: "#/$defs/StringList"
+    allOf:
+      - if:
+          properties:
+            impact:
+              enum:
+                - blocker
+                - high
+            status:
+              enum:
+                - open
+                - monitoring
+          required:
+            - impact
+            - status
+        then:
+          properties:
+            next_action:
+              type: string
+              minLength: 1
+            due_at:
+              $ref: "#/$defs/DateOrDateTime"
+            disposition:
+              enum:
+                - evidence_action
+                - decision_date
+          required:
+            - next_action
+            - due_at
+            - disposition
+  CriterionOutcome:
+    type: object
+    additionalProperties: false
+    required:
+      - criterion_id
+      - status
+      - actual
+      - evidence_claim_ids
+    properties:
+      criterion_id:
+        $ref: "#/$defs/NonEmptyString"
+      status:
+        type: string
+        enum:
+          - met
+          - not_met
+          - partial
+          - inconclusive
+      actual:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+  ActualMetric:
+    type: object
+    additionalProperties: false
+    required:
+      - metric
+      - value
+      - unit
+      - measured_at
+      - source_claim_ids
+    properties:
+      metric:
+        $ref: "#/$defs/NonEmptyString"
+      value:
+        oneOf:
+          - type: string
+            minLength: 1
+          - type: number
+          - type: boolean
+      unit:
+        $ref: "#/$defs/NullableString"
+      measured_at:
+        $ref: "#/$defs/DateOrDateTime"
+      source_claim_ids:
+        $ref: "#/$defs/StringList"
+  Outcome:
+    type: object
+    additionalProperties: false
+    required:
+      - recorded_at
+      - summary
+      - result
+      - criterion_results
+      - actual_metrics
+      - evidence_claim_ids
+      - confounders
+      - unintended_effects
+    properties:
+      recorded_at:
+        $ref: "#/$defs/ISODateTime"
+      summary:
+        $ref: "#/$defs/NonEmptyString"
+      result:
+        type: string
+        enum:
+          - success
+          - adverse
+          - mixed
+          - inconclusive
+          - blocked
+          - intentionally_not_attempted
+      criterion_results:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/CriterionOutcome"
+      actual_metrics:
+        type: array
+        items:
+          $ref: "#/$defs/ActualMetric"
+      evidence_claim_ids:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/NonEmptyString"
+        uniqueItems: true
+      confounders:
+        $ref: "#/$defs/StringList"
+      unintended_effects:
+        $ref: "#/$defs/StringList"
+  JudgmentUpdate:
+    type: object
+    additionalProperties: false
+    required:
+      - update_id
+      - prior_judgment
+      - disposition
+      - updated_judgment
+      - rationale
+      - evidence_claim_ids
+      - scope_conditions
+      - owner_disposition
+      - user_confirmed
+    properties:
+      update_id:
+        $ref: "#/$defs/NonEmptyString"
+      prior_judgment:
+        $ref: "#/$defs/NonEmptyString"
+      disposition:
+        type: string
+        enum:
+          - retain
+          - modify
+          - discard
+          - insufficient_evidence
+      updated_judgment:
+        $ref: "#/$defs/NullableString"
+      rationale:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+      scope_conditions:
+        $ref: "#/$defs/StringList"
+      owner_disposition:
+        description: >-
+          Case Owner response to the proposed update. Rejected updates remain in
+          history but MUST NOT become cross-Case learned rules.
+        type: string
+        enum:
+          - confirmed
+          - revised
+          - rejected
+      user_confirmed:
+        type: boolean
+  AAR:
+    type: object
+    additionalProperties: false
+    required:
+      - completed_at
+      - what_was_expected
+      - what_happened
+      - what_went_well
+      - what_did_not_go_well
+      - why_delta
+      - controllable_factors
+      - uncontrollable_factors
+      - prediction_calibration
+      - lessons
+      - judgment_updates
+      - learning_diagnosis
+      - next_actions
+      - user_confirmed
+    properties:
+      completed_at:
+        $ref: "#/$defs/ISODateTime"
+      what_was_expected:
+        $ref: "#/$defs/NonEmptyString"
+      what_happened:
+        $ref: "#/$defs/NonEmptyString"
+      what_went_well:
+        $ref: "#/$defs/StringList"
+      what_did_not_go_well:
+        $ref: "#/$defs/StringList"
+      why_delta:
+        $ref: "#/$defs/NonEmptyString"
+      controllable_factors:
+        $ref: "#/$defs/StringList"
+      uncontrollable_factors:
+        $ref: "#/$defs/StringList"
+      prediction_calibration:
+        type: string
+        enum:
+          - overconfident
+          - underconfident
+          - well_calibrated
+          - not_assessable
+      lessons:
+        $ref: "#/$defs/StringList"
+      judgment_updates:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/JudgmentUpdate"
+      learning_diagnosis:
+        $ref: "#/$defs/LearningDiagnosis"
+      next_actions:
+        $ref: "#/$defs/StringList"
+      user_confirmed:
+        type: boolean
+  LearningDiagnosisDimension:
+    type: object
+    additionalProperties: false
+    required:
+      - assessment
+      - evidence_claim_ids
+    properties:
+      assessment:
+        $ref: "#/$defs/NonEmptyString"
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+  LearningDiagnosis:
+    description: >-
+      Separates diagnosis of decision process from outcome valence. A favorable
+      outcome cannot erase weak process, and an adverse outcome cannot alone
+      prove that the prior judgment was poor.
+    type: object
+    additionalProperties: false
+    required:
+      - framing
+      - evidence
+      - alternatives
+      - thresholds
+      - commitment
+      - execution
+      - external_change
+      - chance
+      - overall_process_quality
+      - outcome_valence
+      - luck_assessment
+    properties:
+      framing:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      evidence:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      alternatives:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      thresholds:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      commitment:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      execution:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      external_change:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      chance:
+        $ref: "#/$defs/LearningDiagnosisDimension"
+      overall_process_quality:
+        type: string
+        enum:
+          - strong
+          - adequate
+          - weak
+          - not_assessable
+      outcome_valence:
+        type: string
+        enum:
+          - favorable
+          - adverse
+          - mixed
+          - neutral
+          - inconclusive
+          - not_attempted
+      luck_assessment:
+        type: string
+        enum:
+          - materially_helpful
+          - somewhat_helpful
+          - neutral_or_unknown
+          - somewhat_harmful
+          - materially_harmful
+  ReviewReadiness:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - basis
+      - observation_claim_ids
+      - decision_snapshot_available
+      - predictions_available
+      - assessed_at
+      - rationale
+    properties:
+      status:
+        type: string
+        enum:
+          - not_assessed
+          - not_ready
+          - ready
+      basis:
+        type: string
+        enum:
+          - not_assessed
+          - attempted
+          - intentionally_not_attempted
+          - blocked
+          - observation_window_elapsed
+      observation_claim_ids:
+        $ref: "#/$defs/StringList"
+      decision_snapshot_available:
+        type: boolean
+      predictions_available:
+        type: boolean
+      assessed_at:
+        $ref: "#/$defs/NullableDateTime"
+      rationale:
+        $ref: "#/$defs/NullableString"
+  Review:
+    type: object
+    additionalProperties: false
+    required:
+      - status
+      - readiness
+      - review_at
+      - started_at
+      - completed_at
+      - decision_snapshot_version
+      - prediction_ids
+      - outcome
+      - aar
+      - evidence_sufficiency
+      - missing_evidence
+      - next_decision_at
+      - closure_reason
+    properties:
+      status:
+        type: string
+        enum:
+          - not_scheduled
+          - scheduled
+          - due
+          - in_progress
+          - completed
+          - inconclusive
+          - overdue
+      readiness:
+        $ref: "#/$defs/ReviewReadiness"
+      review_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      started_at:
+        $ref: "#/$defs/NullableDateTime"
+      completed_at:
+        $ref: "#/$defs/NullableDateTime"
+      decision_snapshot_version:
+        oneOf:
+          - type: integer
+            minimum: 1
+          - type: "null"
+      prediction_ids:
+        $ref: "#/$defs/StringList"
+      outcome:
+        oneOf:
+          - $ref: "#/$defs/Outcome"
+          - type: "null"
+      aar:
+        oneOf:
+          - $ref: "#/$defs/AAR"
+          - type: "null"
+      evidence_sufficiency:
+        type: string
+        enum:
+          - not_assessed
+          - sufficient
+          - partial
+          - insufficient
+      missing_evidence:
+        $ref: "#/$defs/StringList"
+      next_decision_at:
+        $ref: "#/$defs/NullableDateOrDateTime"
+      closure_reason:
+        $ref: "#/$defs/NullableString"
+  AdvisorDefaultGoal:
+    type: object
+    additionalProperties: false
+    required:
+      - statement
+      - basis
+      - evidence_claim_ids
+      - alignment_with_owner
+      - confidence
+      - user_validated
+    properties:
+      statement:
+        description: >-
+          The objective the advisor appears to optimize by default, such as
+          revenue growth, speed, simplicity, client retention, lifestyle, or
+          risk reduction. It must not be silently treated as the owner's goal.
+        $ref: "#/$defs/NonEmptyString"
+      basis:
+        type: string
+        enum:
+          - explicitly_stated
+          - inferred_from_advice
+          - unknown
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+      alignment_with_owner:
+        type: string
+        enum:
+          - aligned
+          - partially_aligned
+          - conflicting
+          - unknown
+      confidence:
+        $ref: "#/$defs/Confidence"
+      user_validated:
+        type: boolean
+  AdvisorIncentive:
+    type: object
+    additionalProperties: false
+    required:
+      - advisor_incentive_id
+      - advisor
+      - relationship_to_owner
+      - default_goal
+      - advice_claim_ids
+      - potential_incentives
+      - disclosure_status
+      - evidence_claim_ids
+      - likely_direction_of_bias
+      - decision_impact
+      - mitigation
+      - user_acknowledged
+    properties:
+      advisor_incentive_id:
+        $ref: "#/$defs/NonEmptyString"
+      advisor:
+        $ref: "#/$defs/PersonRef"
+      relationship_to_owner:
+        $ref: "#/$defs/NonEmptyString"
+      default_goal:
+        $ref: "#/$defs/AdvisorDefaultGoal"
+      advice_claim_ids:
+        $ref: "#/$defs/StringList"
+      potential_incentives:
+        type: array
+        items:
+          type: string
+          enum:
+            - financial_gain
+            - course_or_service_sales
+            - client_retention
+            - referral_benefit
+            - reputation_or_status
+            - testimonial_or_case_study
+            - ideological_commitment
+            - time_saving
+            - social_affiliation
+            - self_validation
+            - unknown
+            - none_identified
+            - other
+        uniqueItems: true
+      disclosure_status:
+        type: string
+        enum:
+          - disclosed
+          - inferred
+          - unknown
+          - none_identified
+      evidence_claim_ids:
+        $ref: "#/$defs/StringList"
+      likely_direction_of_bias:
+        $ref: "#/$defs/NonEmptyString"
+      decision_impact:
+        type: string
+        enum:
+          - none
+          - low
+          - medium
+          - high
+          - unknown
+      mitigation:
+        $ref: "#/$defs/StringList"
+      user_acknowledged:
+        type: boolean
+  StateTransition:
+    $comment: >-
+      Each record validates an allowed edge. The application validator MUST
+      sort by occurred_at/version, require from to equal the prior to/current
+      state, require the named Gate evidence, and prevent transitions after
+      ARCHIVED except by an explicitly linked new Case/version.
+    type: object
+    additionalProperties: false
+    required:
+      - transition
+      - from
+      - to
+      - gate_id
+      - occurred_at
+      - actor
+      - reason
+      - version
+    properties:
+      transition:
+        type: string
+        enum:
+          - CREATE_TO_DRAFT
+          - DRAFT_TO_CLARIFYING
+          - CLARIFYING_TO_DRAFT
+          - CLARIFYING_TO_MODELED
+          - MODELED_TO_CLARIFYING
+          - MODELED_TO_DECIDING
+          - DECIDING_TO_CLARIFYING
+          - DECIDING_TO_MODELED
+          - DECIDING_TO_PLANNED
+          - PLANNED_TO_DECIDING
+          - PLANNED_TO_ACTING
+          - ACTING_TO_REVIEW_DUE
+          - REVIEW_DUE_TO_ACTING
+          - REVIEW_DUE_TO_REVIEWED
+          - REVIEWED_TO_CLARIFYING
+          - REVIEWED_TO_ARCHIVED
+      from:
+        oneOf:
+          - $ref: "#/$defs/CaseStatus"
+          - type: "null"
+      to:
+        $ref: "#/$defs/CaseStatus"
+      gate_id:
+        description: >-
+          Gate record authorizing this edge. Null is allowed only for initial
+          Case creation; the application validator verifies Gate evidence and
+          correspondence to the named transition.
+        $ref: "#/$defs/NullableString"
+      occurred_at:
+        $ref: "#/$defs/ISODateTime"
+      actor:
+        $ref: "#/$defs/PersonRef"
+      reason:
+        $ref: "#/$defs/NonEmptyString"
+      version:
+        type: integer
+        minimum: 1
+    oneOf:
+      - properties:
+          transition: {const: CREATE_TO_DRAFT}
+          from: {type: "null"}
+          to: {const: DRAFT}
+          gate_id: {type: "null"}
+      - properties:
+          transition: {const: DRAFT_TO_CLARIFYING}
+          from: {const: DRAFT}
+          to: {const: CLARIFYING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: CLARIFYING_TO_DRAFT}
+          from: {const: CLARIFYING}
+          to: {const: DRAFT}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: CLARIFYING_TO_MODELED}
+          from: {const: CLARIFYING}
+          to: {const: MODELED}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: MODELED_TO_CLARIFYING}
+          from: {const: MODELED}
+          to: {const: CLARIFYING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: MODELED_TO_DECIDING}
+          from: {const: MODELED}
+          to: {const: DECIDING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: DECIDING_TO_CLARIFYING}
+          from: {const: DECIDING}
+          to: {const: CLARIFYING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: DECIDING_TO_MODELED}
+          from: {const: DECIDING}
+          to: {const: MODELED}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: DECIDING_TO_PLANNED}
+          from: {const: DECIDING}
+          to: {const: PLANNED}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: PLANNED_TO_DECIDING}
+          from: {const: PLANNED}
+          to: {const: DECIDING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: PLANNED_TO_ACTING}
+          from: {const: PLANNED}
+          to: {const: ACTING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: ACTING_TO_REVIEW_DUE}
+          from: {const: ACTING}
+          to: {const: REVIEW_DUE}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: REVIEW_DUE_TO_ACTING}
+          from: {const: REVIEW_DUE}
+          to: {const: ACTING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: REVIEW_DUE_TO_REVIEWED}
+          from: {const: REVIEW_DUE}
+          to: {const: REVIEWED}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: REVIEWED_TO_CLARIFYING}
+          from: {const: REVIEWED}
+          to: {const: CLARIFYING}
+          gate_id: {type: string, minLength: 1}
+      - properties:
+          transition: {const: REVIEWED_TO_ARCHIVED}
+          from: {const: REVIEWED}
+          to: {const: ARCHIVED}
+          gate_id: {type: string, minLength: 1}
+  AuditEvent:
+    type: object
+    additionalProperties: false
+    required:
+      - event_id
+      - event_type
+      - occurred_at
+      - actor
+      - summary
+      - affected_paths
+    properties:
+      event_id:
+        $ref: "#/$defs/NonEmptyString"
+      event_type:
+        type: string
+        enum:
+          - case_created
+          - claim_added
+          - claim_corrected
+          - hypothesis_updated
+          - gate_passed
+          - gate_reopened
+          - decision_confirmed
+          - decision_superseded
+          - action_updated
+          - outcome_recorded
+          - aar_completed
+          - case_archived
+      occurred_at:
+        $ref: "#/$defs/ISODateTime"
+      actor:
+        $ref: "#/$defs/PersonRef"
+      summary:
+        $ref: "#/$defs/NonEmptyString"
+      affected_paths:
+        $ref: "#/$defs/StringList"
+  Audit:
+    type: object
+    additionalProperties: false
+    required:
+      - source_manifest
+      - state_transitions
+      - events
+      - decision_locked_at
+      - decision_snapshot_sha256
+      - last_validated_at
+      - validator_version
+    properties:
+      source_manifest:
+        type: array
+        items:
+          $ref: "#/$defs/SourceRef"
+      state_transitions:
+        type: array
+        items:
+          $ref: "#/$defs/StateTransition"
+      events:
+        type: array
+        items:
+          $ref: "#/$defs/AuditEvent"
+      decision_locked_at:
+        $ref: "#/$defs/NullableDateTime"
+      decision_snapshot_sha256:
+        oneOf:
+          - type: string
+            pattern: "^[a-f0-9]{64}$"
+          - type: "null"
+      last_validated_at:
+        $ref: "#/$defs/NullableDateTime"
+      validator_version:
+        $ref: "#/$defs/NonEmptyString"
