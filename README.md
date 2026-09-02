@@ -25,6 +25,7 @@ Windows、ZIP 解压工具和部分同步软件可能把符号链接变成普通
 
 ```bash
 test -e .claude/skills/clarify/SKILL.md
+test -e .claude/skills/clarify/references/interview.md
 ```
 
 ## 开始使用

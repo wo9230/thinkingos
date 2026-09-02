@@ -13,7 +13,7 @@
 ### Skill
 
 `clarify` 的**主版本在 `.agents/skills/clarify/SKILL.md`**（Codex 的发现路径）。
-`.claude/skills/clarify/SKILL.md` 是指向它的符号链接——两边同一份内容，改主版本即可。
+`.claude/skills/clarify/SKILL.md` 与同目录 `references/` 都是指向它的符号链接——两边同一份内容，改主版本即可。
 
 不要把这两个文件分别编辑，会造成漂移。
 
