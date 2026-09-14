@@ -10,17 +10,19 @@ ThinkingOS —— 把模糊情境变成可验证下一步的思考工具。判�
 
 结构按 Karpathy 三层：**raw**（`cases/`、`_private/raw/`、`_private/courses/`，不可改）· **compiled**（`_private/facts/` 事实库，LLM 起草、本人确认）· **schema**（CATALOG、Skill、模板，领域中立）。`_private/` 与 `cases/` 各自是独立的私有 git 仓库。
 
-## 开工必读（按序）
+## 按任务读取
 
 | 文件 | 是什么 | 什么时候读 |
 |---|---|---|
-| [frameworks/CATALOG.md](frameworks/CATALOG.md) | **判断内核**：35 条通用框架，每条带「什么时候别用」+ 选择判据 | 每次开工 |
-| [docs/00-product/MVP-v0.1.md](docs/00-product/MVP-v0.1.md) | **建造契约**：v0.1 做什么、明确不做什么 | 动手前 |
-| [docs/00-product/MVP-v0.1.1-SPEC.md](docs/00-product/MVP-v0.1.1-SPEC.md) | v0.1.1 增量规格：事实库 / 采访引擎 / 模板适配器 / Skill 路由器 | 动手前，与 MVP-v0.1 一起读 |
+| [frameworks/CATALOG.md](frameworks/CATALOG.md) | **判断内核**：35 条通用框架，每条带「什么时候别用」+ 选择判据 | 当前判断需要框架，或维护框架时 |
+| [docs/00-product/MVP-v0.1.md](docs/00-product/MVP-v0.1.md) | **建造契约**：v0.1 做什么、明确不做什么 | 修改产品行为或建造范围前 |
+| [docs/00-product/MVP-v0.1.1-SPEC.md](docs/00-product/MVP-v0.1.1-SPEC.md) | v0.1.1 增量规格：事实库 / 采访引擎 / 模板适配器 / Skill 路由器 | 修改状态层、采访、适配或路由时，与 MVP 一起读 |
 | [docs/00-product/PRODUCT-CONSTITUTION.md](docs/00-product/PRODUCT-CONSTITUTION.md) | 不可妥协的产品规则 C-01…C-08 | 改产品行为前 |
-| [docs/01-research/DECISION-LOG.md](docs/01-research/DECISION-LOG.md) | 每条规则为什么这么定（D-001…D-028），含已考虑的替代项 | 想推翻某条规则前 |
+| [docs/01-research/DECISION-LOG.md](docs/01-research/DECISION-LOG.md) | 规则依据与后续裁决，含已考虑的替代项 | 修改规范性规则前 |
 | [CONTEXT.md](CONTEXT.md) | 词汇表，每个术语带 `_Avoid_` 反义词，防术语漂移 | 写产品文档前 |
-| [memory.md](memory.md) | 当前阶段、验证状态与发布边界；只记已确认的持久状态 | 每次开工最后读 |
+| [memory.md](memory.md) | 当前阶段、验证状态与发布边界；只记已确认的持久状态 | 恢复项目状态、核验进度或准备发布时 |
+
+普通问答、简单编辑不预读全部契约。私有索引按当前 Case、复盘或事实库任务读取；存档与写回须包含在用户请求中（D-030），不因调用 Skill 自动扫库或落盘。
 
 `docs/00-product/PRD-v0.2.md` 是 **North Star，不是施工图**。它定义的 8 道 fail-closed Gate 和 17 段 schema 是长期目标；v0.1 以 `MVP-v0.1.md` 为准，二者冲突时听后者。
 
@@ -63,11 +65,13 @@ ThinkingOS —— 把模糊情境变成可验证下一步的思考工具。判�
 
 理由见 `MVP-v0.1.md` §6 的 D-023…D-026：现阶段先验证工具能否被反复使用，再决定是否扩建。D-026 只允许按需读取既有知识源，不解除本节的新建禁令。
 
-**唯一例外 `D-028`（v0.1.1）**：负责人授权在 5 Case 前建设状态层（事实库、采访引擎、模板适配器、复盘索引、全局入口）并把 Skill 压成路由器；规格见 `docs/00-product/MVP-v0.1.1-SPEC.md`。它不解冻本节其它任何一项。
+**状态层例外 `D-028`（v0.1.1）**：负责人授权在 5 Case 前建设状态层（事实库、采访引擎、模板适配器、复盘索引、全局入口）并把 Skill 压成路由器；规格见 `docs/00-product/MVP-v0.1.1-SPEC.md`。它不解冻本节其它任何一项。
+
+**外部接入例外 `D-029`**：负责人已授权复用既有外部工作台连接阶段目标、本周结果、今日行动和产物反馈，并按需调用现有 `clarify`。个人事实仍在私有事实库，计划和行动写回工作台原文件；不在本仓库建设 UI，不批准 v0.3 全量施工，不解除其他扩建禁令。范围、重访与回滚见 `docs/01-research/DECISION-LOG.md` §4。
 
 ### 5. 新东西先问：新模板还是新形状
 
-新课程、新工具、新的 AI 审阅到来时，先答一句：**这是新的问题形状，还是新的模板？** 模板走 `references/adapt.md` 让系统替本人填；只有 CATALOG 兜底记录证明「断点在第 X 环、现有工具都不匹配」的形状才有资格入库。两者都不新建仓库。
+新课程、新工具、新的 AI 审阅到来时，先区分问题形状与模板。用户要求适配模板时，走 `.agents/skills/clarify/references/adapt.md`；只有 CATALOG 兜底记录证明「断点在第 X 环、现有工具都不匹配」的形状才有资格入库。两者都不新建仓库。
 
 ## Git 与发布边界
 

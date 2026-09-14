@@ -1,8 +1,18 @@
 # 私人素材：真实谈话记录、他人隐私、未脱敏的一手材料
 _private/
 
-# 真实 case：含真名、营收、客户名单
-cases/
+# 根目录的真实 Case；公开模板中的同名子目录可分发
+/cases/
+
+# 本机杂项与敏感配置不属于公开产品
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+*.bak
+*.tmp
+.release/
 
 # 产品文件（docs / templates / frameworks / schemas）必须领域中立，
 # 不含任何具体人物、公司、营收数字——那些只能住在上面两个目录里。
